@@ -1,0 +1,1 @@
+node_modules/ .env .env.local *.sqlite dist/ build/ .expo/ *.apk .DS_Store
