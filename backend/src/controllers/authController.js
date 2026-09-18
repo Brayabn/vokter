@@ -1,14 +1,15 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { User } = require('../models');
+const { config } = require('../config/env');
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function signToken(user) {
   return jwt.sign(
     { id: user.id, role: user.role, email: user.email },
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+    config.jwtSecret,
+    { expiresIn: config.jwtExpiresIn }
   );
 }
 
@@ -81,7 +82,12 @@ exports.login = async (req, res) => {
 };
 
 exports.me = async (req, res) => {
-  const user = await User.findByPk(req.user.id);
-  if (!user) return res.status(404).json({ error: 'Usuario no encontrado.' });
-  return res.json({ user: publicUser(user) });
+  try {
+    const user = await User.findByPk(req.user.id);
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado.' });
+    return res.json({ user: publicUser(user) });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Error al obtener el usuario.' });
+  }
 };

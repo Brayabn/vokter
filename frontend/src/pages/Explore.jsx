@@ -1,30 +1,30 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import api from '../api/client';
+import { useApiRequest } from '../hooks/useApiRequest';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import ContentCard from '../components/ContentCard';
+import { LoadingState, ErrorState, EmptyState } from '../components/StateViews';
 
 export default function Explore() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [categories, setCategories] = useState([]);
-  const [contents, setContents] = useState([]);
   const [search, setSearch] = useState(searchParams.get('search') || '');
-  const [loading, setLoading] = useState(true);
+  // La búsqueda se envía cuando el usuario deja de escribir, no en cada tecla.
+  const debouncedSearch = useDebouncedValue(search.trim(), 400);
 
   const activeCategory = searchParams.get('categoria') || '';
 
-  useEffect(() => {
-    api.get('/categories').then((res) => setCategories(res.data.categories));
-  }, []);
+  const { data: categories } = useApiRequest(
+    () => api.get('/categories').then((res) => res.data.categories),
+    []
+  );
 
-  useEffect(() => {
-    setLoading(true);
+  const { data: contents, loading, error, reload } = useApiRequest(() => {
     const params = {};
-    if (search) params.search = search;
+    if (debouncedSearch) params.search = debouncedSearch;
     if (activeCategory) params.categorySlug = activeCategory;
-    api.get('/contents', { params })
-      .then((res) => setContents(res.data.contents))
-      .finally(() => setLoading(false));
-  }, [search, activeCategory]);
+    return api.get('/contents', { params }).then((res) => res.data.contents);
+  }, [debouncedSearch, activeCategory]);
 
   function handleSearch(e) {
     e.preventDefault();
@@ -53,7 +53,7 @@ export default function Explore() {
       </form>
 
       <div className="flex flex-wrap gap-2 mb-10">
-        {categories.map((cat) => (
+        {(categories || []).map((cat) => (
           <button
             key={cat.slug}
             onClick={() => toggleCategory(cat.slug)}
@@ -69,9 +69,15 @@ export default function Explore() {
       </div>
 
       {loading ? (
-        <p className="text-lavender">Cargando...</p>
+        <LoadingState />
+      ) : error ? (
+        <ErrorState message={error} onRetry={reload} />
       ) : contents.length === 0 ? (
-        <p className="text-lavender">No encontramos resultados. Prueba con otra búsqueda o categoría.</p>
+        <EmptyState
+          message={debouncedSearch
+            ? `No encontramos resultados para "${debouncedSearch}". Prueba con otra búsqueda o categoría.`
+            : 'No hay contenidos en esta categoría todavía.'}
+        />
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {contents.map((c) => <ContentCard key={c.id} content={c} />)}

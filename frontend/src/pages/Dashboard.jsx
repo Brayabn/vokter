@@ -1,17 +1,17 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useApiRequest } from '../hooks/useApiRequest';
 import AiMatchWidget from '../components/AiMatchWidget';
 import ContentCard from '../components/ContentCard';
+import { LoadingState, ErrorState } from '../components/StateViews';
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const [contents, setContents] = useState([]);
-
-  useEffect(() => {
-    api.get('/contents?sort=rating').then((res) => setContents(res.data.contents.slice(0, 3)));
-  }, []);
+  const { data: contents, loading, error, reload } = useApiRequest(
+    () => api.get('/contents', { params: { sort: 'rating' } }).then((res) => res.data.contents.slice(0, 3)),
+    []
+  );
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches';
@@ -29,9 +29,15 @@ export default function Dashboard() {
         <h2 className="font-display font-semibold text-xl text-mist">Mejor valorados para ti</h2>
         <Link to="/explorar" className="text-sm text-gold hover:text-goldSoft">Ver todo</Link>
       </div>
-      <div className="grid sm:grid-cols-3 gap-5">
-        {contents.map((c) => <ContentCard key={c.id} content={c} />)}
-      </div>
+      {loading ? (
+        <LoadingState />
+      ) : error ? (
+        <ErrorState message={error} onRetry={reload} />
+      ) : (
+        <div className="grid sm:grid-cols-3 gap-5">
+          {contents.map((c) => <ContentCard key={c.id} content={c} />)}
+        </div>
+      )}
     </div>
   );
 }

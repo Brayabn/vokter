@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import anime from 'animejs';
 import api from '../api/client';
+import { getErrorMessage } from '../api/errors';
 import MatchCard from './MatchCard';
 
 const EXAMPLES = [
@@ -18,10 +19,15 @@ export default function AiMatchWidget({ variant = 'default' }) {
 
   useEffect(() => {
     if (!results || !resultsRef.current) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const cards = resultsRef.current.querySelectorAll('.result-card');
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      // Sin animación, pero visibles (las tarjetas arrancan con opacity-0).
+      cards.forEach((el) => { el.style.opacity = '1'; });
+      return;
+    }
 
     anime({
-      targets: resultsRef.current.querySelectorAll('.result-card'),
+      targets: cards,
       opacity: [0, 1],
       translateY: [16, 0],
       scale: [0.96, 1],
@@ -43,7 +49,7 @@ export default function AiMatchWidget({ variant = 'default' }) {
       const res = await api.post('/ai/match', { query });
       setResults(res.data.results);
     } catch (err) {
-      setError('No pudimos procesar tu consulta. Intenta de nuevo.');
+      setError(getErrorMessage(err, 'No pudimos procesar tu consulta. Intenta de nuevo.'));
     } finally {
       setLoading(false);
     }

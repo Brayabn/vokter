@@ -7,14 +7,10 @@ import Avatar from '../components/Avatar';
 import ContentCard from '../components/ContentCard';
 import { LoadingState, ErrorState, EmptyState } from '../components/StateViews';
 
-// El backend no expone GET /experts/:id; se combinan endpoints existentes:
-// GET /experts (datos completos, incluye skills) y GET /contents (filtrado por autor).
+// GET /experts/:id devuelve { expert, contents } en una sola llamada.
 async function fetchExpertProfile(expertId) {
-  const [expertsRes, contentsRes] = await Promise.all([api.get('/experts'), api.get('/contents')]);
-  return {
-    expert: expertsRes.data.experts.find((e) => e.id === expertId) || null,
-    contents: contentsRes.data.contents.filter((c) => c.author?.id === expertId),
-  };
+  const res = await api.get(`/experts/${expertId}`);
+  return res.data;
 }
 
 export default function ExpertProfileScreen({ route, navigation }) {

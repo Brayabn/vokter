@@ -1,5 +1,11 @@
 const { Op } = require('sequelize');
-const { Content, Category, User } = require('../models');
+const { sequelize, Content, Category, User } = require('../models');
+const { parseId } = require('../utils/params');
+
+// En PostgreSQL LIKE distingue mayúsculas; ILIKE no. SQLite solo tiene LIKE (ya insensible).
+const likeOp = sequelize.getDialect() === 'postgres' ? Op.iLike : Op.like;
+
+const EXPERT_ATTRIBUTES = ['id', 'name', 'bio', 'skills', 'avatarUrl', 'rating'];
 
 // GET /api/contents?search=&categorySlug=&sort=rating
 exports.list = async (req, res) => {
@@ -13,9 +19,9 @@ exports.list = async (req, res) => {
 
     if (search) {
       where[Op.or] = [
-        { title: { [Op.like]: `%${search}%` } },
-        { description: { [Op.like]: `%${search}%` } },
-        { tags: { [Op.like]: `%${search}%` } },
+        { title: { [likeOp]: `%${search}%` } },
+        { description: { [likeOp]: `%${search}%` } },
+        { tags: { [likeOp]: `%${search}%` } },
       ];
     }
 
@@ -36,7 +42,9 @@ exports.list = async (req, res) => {
 // GET /api/contents/:id
 exports.getById = async (req, res) => {
   try {
-    const content = await Content.findByPk(req.params.id, {
+    const id = parseId(req.params.id);
+    if (!id) return res.status(404).json({ error: 'Contenido no encontrado.' });
+    const content = await Content.findByPk(id, {
       include: [
         { model: Category, as: 'category' },
         { model: User, as: 'author', attributes: ['id', 'name', 'bio', 'avatarUrl', 'rating', 'skills'] },
@@ -70,8 +78,34 @@ exports.create = async (req, res) => {
 
 // GET /api/categories
 exports.listCategories = async (req, res) => {
-  const categories = await Category.findAll({ order: [['name', 'ASC']] });
-  return res.json({ categories });
+  try {
+    const categories = await Category.findAll({ order: [['name', 'ASC']] });
+    return res.json({ categories });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Error al listar categorías.' });
+  }
+};
+
+// GET /api/experts/:id  -> perfil público del experto + sus contenidos publicados
+exports.getExpert = async (req, res) => {
+  try {
+    const id = parseId(req.params.id);
+    if (!id) return res.status(404).json({ error: 'Experto no encontrado.' });
+
+    const expert = await User.findOne({ where: { id, role: 'expert' }, attributes: EXPERT_ATTRIBUTES });
+    if (!expert) return res.status(404).json({ error: 'Experto no encontrado.' });
+
+    const contents = await Content.findAll({
+      where: { authorId: id },
+      include: [{ model: Category, as: 'category' }],
+      order: [['rating', 'DESC']],
+    });
+    return res.json({ expert, contents });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Error al obtener el experto.' });
+  }
 };
 
 // GET /api/experts?categorySlug=  -> expertos, opcionalmente los que tienen contenido en esa categoría
@@ -83,7 +117,7 @@ exports.listExperts = async (req, res) => {
       const contents = await Content.findAll({
         include: [
           { model: Category, as: 'category', where: { slug: categorySlug } },
-          { model: User, as: 'author', attributes: ['id', 'name', 'bio', 'skills', 'avatarUrl', 'rating'] },
+          { model: User, as: 'author', attributes: EXPERT_ATTRIBUTES },
         ],
       });
       const seen = new Map();
@@ -93,7 +127,7 @@ exports.listExperts = async (req, res) => {
 
     const experts = await User.findAll({
       where: { role: 'expert' },
-      attributes: ['id', 'name', 'bio', 'skills', 'avatarUrl', 'rating'],
+      attributes: EXPERT_ATTRIBUTES,
       order: [['rating', 'DESC']],
     });
     return res.json({ experts });

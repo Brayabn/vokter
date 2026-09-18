@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 export default function MatchCard({ match }) {
   return (
     <div className="rounded-2xl bg-surface border border-white/5 p-5 flex flex-col gap-3">
@@ -10,9 +12,12 @@ export default function MatchCard({ match }) {
       <p className="text-sm text-lavender line-clamp-2">{match.bio}</p>
       <div className="flex items-center justify-between pt-2">
         <span className="text-xs font-mono text-success">★ {match.rating?.toFixed(1)}</span>
-        <button className="text-xs px-3 py-1.5 rounded-full border border-white/10 text-mist hover:bg-surface2 transition-colors">
+        <Link
+          to={`/experto/${match.id}`}
+          className="text-xs px-3 py-1.5 rounded-full border border-white/10 text-mist hover:bg-surface2 transition-colors"
+        >
           Ver perfil
-        </button>
+        </Link>
       </div>
     </div>
   );

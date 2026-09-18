@@ -1,0 +1,28 @@
+# Render Blueprint: despliegue del backend de VOKTER como código.
+# Render → New → Blueprint → seleccionar este repositorio.
+# Las variables marcadas con sync: false se piden en el panel al crear el servicio.
+services:
+  - type: web
+    name: vokter-api
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "20"
+      - key: JWT_SECRET
+        generateValue: true # Render genera un secreto aleatorio; nunca pasa por el repositorio
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: DATABASE_URL
+        sync: false # cadena de conexión de Neon (se pega en el panel)
+      - key: CORS_ORIGIN
+        sync: false # URL de la web en Vercel (https://<proyecto>.vercel.app). Puede quedar vacía en el
+                    # primer despliegue: la API arranca y solo bloquea navegadores hasta definirla.
+      - key: SEED_DEMO_DATA
+        value: "true"
