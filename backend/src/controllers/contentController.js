@@ -73,3 +73,32 @@ exports.listCategories = async (req, res) => {
   const categories = await Category.findAll({ order: [['name', 'ASC']] });
   return res.json({ categories });
 };
+
+// GET /api/experts?categorySlug=  -> expertos, opcionalmente los que tienen contenido en esa categoría
+exports.listExperts = async (req, res) => {
+  try {
+    const { categorySlug } = req.query;
+
+    if (categorySlug) {
+      const contents = await Content.findAll({
+        include: [
+          { model: Category, as: 'category', where: { slug: categorySlug } },
+          { model: User, as: 'author', attributes: ['id', 'name', 'bio', 'skills', 'avatarUrl', 'rating'] },
+        ],
+      });
+      const seen = new Map();
+      contents.forEach((c) => { if (c.author && !seen.has(c.author.id)) seen.set(c.author.id, c.author); });
+      return res.json({ experts: Array.from(seen.values()) });
+    }
+
+    const experts = await User.findAll({
+      where: { role: 'expert' },
+      attributes: ['id', 'name', 'bio', 'skills', 'avatarUrl', 'rating'],
+      order: [['rating', 'DESC']],
+    });
+    return res.json({ experts });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Error al listar expertos.' });
+  }
+};
