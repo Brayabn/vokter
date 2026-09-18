@@ -1,10 +1,11 @@
-require('dotenv').config();
+const { config, validateConfig } = require('./config/env');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 
 const { sequelize } = require('./models');
+const { seedDemoData } = require('./utils/seed');
 const authRoutes = require('./routes/authRoutes');
 const contentRoutes = require('./routes/contentRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
@@ -14,9 +15,24 @@ const expertRoutes = require('./routes/expertRoutes');
 
 const app = express();
 
+// Render (y la mayoría de PaaS) ponen un proxy delante: sin esto, el rate limit
+// vería la IP del proxy para todos los usuarios.
+app.set('trust proxy', 1);
+
 // Cabeceras de seguridad HTTP estándar (previene clickjacking, sniffing de MIME, etc.)
 app.use(helmet());
-app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
+
+// CORS: en producción solo los dominios de la web (CORS_ORIGIN, separados por coma).
+// Las peticiones sin cabecera Origin (app móvil nativa, curl) no están sujetas a CORS.
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin) return callback(null, true); // app móvil / herramientas sin navegador
+    // Desarrollo sin CORS_ORIGIN: cualquier origen. Producción sin CORS_ORIGIN: ninguno.
+    if (config.corsOrigins.length === 0) return callback(null, !config.isProduction);
+    return callback(null, config.corsOrigins.includes(origin));
+  },
+}));
+
 app.use(express.json({ limit: '100kb' })); // límite de tamaño, evita payloads abusivos
 
 // Límite de intentos en endpoints sensibles: previene fuerza bruta sobre login/registro.
@@ -30,7 +46,15 @@ const authLimiter = rateLimit({
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
 
-app.get('/api/health', (req, res) => res.json({ status: 'ok', service: 'vokter-backend' }));
+// Health check (lo usa Render): verifica también la conexión a la base de datos.
+app.get('/api/health', async (req, res) => {
+  try {
+    await sequelize.authenticate();
+    return res.json({ status: 'ok', service: 'vokter-backend', database: sequelize.getDialect() });
+  } catch (err) {
+    return res.status(503).json({ status: 'error', service: 'vokter-backend', database: 'unreachable' });
+  }
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/contents', contentRoutes);
@@ -39,30 +63,42 @@ app.use('/api/favorites', favoriteRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/experts', expertRoutes);
 
-// Manejo centralizado de errores no capturados
+// Rutas inexistentes: JSON en vez de la página HTML por defecto de Express.
+app.use((req, res) => res.status(404).json({ error: 'Recurso no encontrado.' }));
+
+// Manejo centralizado de errores no capturados (no se filtran stack traces al cliente)
 app.use((err, req, res, next) => {
+  if (err.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: 'El cuerpo de la petición no es JSON válido.' });
+  }
   console.error(err);
-  res.status(500).json({ error: 'Error interno del servidor.' });
+  return res.status(500).json({ error: 'Error interno del servidor.' });
 });
 
-const PORT = process.env.PORT || 4000;
-
 async function start() {
-  if (!process.env.JWT_SECRET || process.env.JWT_SECRET === 'cambia_este_valor_por_uno_seguro') {
-    console.warn('⚠️  JWT_SECRET no ha sido personalizado en .env — cámbialo antes de producción.');
-  }
-
   try {
-    await sequelize.authenticate();
-    // sync() crea las tablas automáticamente si no existen (ideal para evaluación rápida)
-    await sequelize.sync();
-    console.log('✅ Base de datos conectada y sincronizada.');
+    validateConfig();
 
-    app.listen(PORT, () => {
-      console.log(`🚀 VOKTER backend corriendo en http://localhost:${PORT}`);
+    await sequelize.authenticate();
+    // sync() crea las tablas que no existan (no altera ni borra las existentes).
+    await sequelize.sync();
+    console.log(`✅ Base de datos conectada (${sequelize.getDialect()}) y sincronizada.`);
+
+    if (config.seedDemoData) {
+      const created = await seedDemoData();
+      console.log('🌱 Datos demo verificados. Nuevos registros:', created);
+    }
+
+    const server = app.listen(config.port, () => {
+      console.log(`🚀 VOKTER backend (${config.nodeEnv}) escuchando en el puerto ${config.port}`);
+    });
+
+    // Cierre ordenado cuando la plataforma detiene la instancia.
+    process.on('SIGTERM', () => {
+      server.close(() => sequelize.close().finally(() => process.exit(0)));
     });
   } catch (err) {
-    console.error('❌ Error al iniciar el servidor:', err);
+    console.error('❌ Error al iniciar el servidor:', err.message);
     process.exit(1);
   }
 }

@@ -2,7 +2,9 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { API_BASE_URL } from '../config';
 
-const api = axios.create({ baseURL: API_BASE_URL, timeout: 15000 });
+// 60 s: el plan gratuito de Render "duerme" el servicio y la primera petición
+// tras la inactividad puede tardar ~30-60 s en responder (arranque en frío).
+const api = axios.create({ baseURL: API_BASE_URL, timeout: 60000 });
 
 // AuthContext registra aquí qué hacer cuando el servidor rechaza el token.
 let unauthorizedHandler = null;

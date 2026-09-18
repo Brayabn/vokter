@@ -1,16 +1,27 @@
 const { Sequelize } = require('sequelize');
 const path = require('path');
-require('dotenv').config();
+const { config } = require('./env');
 
-// Usamos SQLite para desarrollo/evaluación: cero configuración, corre con un
-// simple `npm install`. En producción basta con cambiar el dialect a 'mysql'
-// o 'postgres' y ajustar las credenciales; los modelos no cambian.
-const storagePath = process.env.DB_STORAGE || path.join(__dirname, '../../data/vokter.sqlite');
+// Producción: PostgreSQL (Neon) vía DATABASE_URL, con SSL obligatorio.
+// Desarrollo: SQLite en un archivo local, sin instalar ni configurar nada.
+// Los modelos y controladores son los mismos en ambos casos (Sequelize abstrae el motor).
+let sequelize;
 
-const sequelize = new Sequelize({
-  dialect: 'sqlite',
-  storage: storagePath,
-  logging: false,
-});
+if (config.databaseUrl) {
+  sequelize = new Sequelize(config.databaseUrl, {
+    dialect: 'postgres',
+    logging: false,
+    dialectOptions: config.databaseSsl
+      ? { ssl: { require: true, rejectUnauthorized: true } } // Neon: TLS con certificado verificado
+      : {},
+    pool: { max: 5, min: 0, idle: 10000 },
+  });
+} else {
+  sequelize = new Sequelize({
+    dialect: 'sqlite',
+    storage: config.dbStorage || path.join(__dirname, '../../data/vokter.sqlite'),
+    logging: false,
+  });
+}
 
 module.exports = sequelize;

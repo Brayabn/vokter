@@ -22,11 +22,16 @@ export default function Landing() {
   const heroRef = useRef(null);
 
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const items = heroRef.current.querySelectorAll('.animate-in');
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      // Sin animación, pero visible (los elementos arrancan con opacity-0).
+      items.forEach((el) => { el.style.opacity = '1'; });
+      return;
+    }
 
     anime.timeline({ easing: 'easeOutExpo' })
       .add({
-        targets: heroRef.current.querySelectorAll('.animate-in'),
+        targets: items,
         opacity: [0, 1],
         translateY: [24, 0],
         delay: anime.stagger(90),

@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const { config } = require('../config/env');
 
 /**
  * Verifica el token JWT enviado en el header Authorization: Bearer <token>
@@ -13,7 +14,7 @@ function requireAuth(req, res, next) {
   }
 
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    const payload = jwt.verify(token, config.jwtSecret);
     req.user = payload; // { id, role, email }
     next();
   } catch (err) {

@@ -1,55 +1,71 @@
 # API de VØKTER
 
-Base URL local: `http://localhost:4000/api`
+- **Local:** `http://localhost:4000/api` (o el `PORT` de `backend/.env`)
+- **Producción:** `https://<servicio>.onrender.com/api` (ver README → URLs públicas)
+
+Todas las respuestas son JSON. Los errores controlados tienen la forma `{ "error": "mensaje" }`.
+
+## Salud
+
+| Método | Ruta | Auth | Descripción |
+|---|---|---|---|
+| GET | `/health` | No | `{ status: "ok", database: "postgres" \| "sqlite" }`. Verifica la conexión a la BD (503 si falla). Lo usa Render como health check |
 
 ## Auth
 
 | Método | Ruta | Auth | Descripción |
 |---|---|---|---|
-| POST | `/auth/register` | No | `{ name, email, password, role?, bio?, skills? }` → `{ token, user }` |
-| POST | `/auth/login` | No | `{ email, password }` → `{ token, user }` |
-| GET | `/auth/me` | Sí | Devuelve el usuario autenticado |
+| POST | `/auth/register` | No | `{ name, email, password, role?, bio?, skills? }` → `201 { token, user }`. Valida email y contraseña (≥ 6) |
+| POST | `/auth/login` | No | `{ email, password }` → `{ token, user }` · `401` credenciales inválidas |
+| GET | `/auth/me` | Sí | Usuario autenticado · `401` token inválido/expirado |
 
-## Categorías
+`/auth/login` y `/auth/register` tienen rate limit: 20 intentos por IP cada 15 minutos.
 
-| Método | Ruta | Auth | Descripción |
-|---|---|---|---|
-| GET | `/categories` | No | Lista todas las categorías |
-
-## Contenidos
+## Catálogo
 
 | Método | Ruta | Auth | Descripción |
 |---|---|---|---|
-| GET | `/contents?search=&categorySlug=&sort=rating` | No | Explorar/buscar/filtrar |
-| GET | `/contents/:id` | No | Detalle de un contenido |
-| POST | `/contents` | Sí (`expert`) | Crear contenido/servicio |
+| GET | `/categories` | No | Categorías ordenadas por nombre |
+| GET | `/contents?search=&categorySlug=&sort=rating` | No | Buscar (sin distinguir mayúsculas), filtrar y ordenar |
+| GET | `/contents/:id` | No | Detalle con categoría y autor · `404` si no existe o el id no es válido |
+| POST | `/contents` | Sí (`expert`) | Crear contenido `{ title, description, categoryId, tags?, imageUrl? }` |
+| GET | `/experts?categorySlug=` | No | Expertos (opcionalmente los que publican en esa categoría) |
+| GET | `/experts/:id` | No | `{ expert, contents }`: perfil público y sus contenidos |
 
-## Favoritos
+## Favoritos (requieren token)
 
-| Método | Ruta | Auth | Descripción |
-|---|---|---|---|
-| GET | `/favorites` | Sí | Lista los favoritos del usuario |
-| POST | `/favorites/:contentId` | Sí | Marca como favorito |
-| DELETE | `/favorites/:contentId` | Sí | Quita de favoritos |
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/favorites` | Favoritos del usuario (con categoría y autor) |
+| POST | `/favorites/:contentId` | Agrega. Idempotente: `201` si se creó, `200` si ya existía |
+| DELETE | `/favorites/:contentId` | Quita. Idempotente: `204` |
 
 ## VOKTER AI
 
 | Método | Ruta | Auth | Descripción |
 |---|---|---|---|
-| POST | `/ai/match` | No | `{ query: "texto en lenguaje natural" }` → top 3 expertos con `matchScore` |
+| POST | `/ai/match` | No | `{ query: "texto en lenguaje natural" }` → top 3 expertos con `matchScore` (%) |
 
-## Autenticación en requests protegidas
+## Autenticación
 
 ```
 Authorization: Bearer <token>
 ```
 
-## Usuarios demo (tras `npm run seed`)
+JWT firmado con `JWT_SECRET` (HS256), expira según `JWT_EXPIRES_IN` (7 días). Payload: `{ id, role, email }`.
 
-Password para todos: `vokter123`
+## Usuarios demo (seed)
 
-- `demo@vokter.com` — role `user`
-- `laura@vokter.com` — role `expert`, marketing
-- `carlos@vokter.com` — role `expert`, desarrollo
-- `sofia@vokter.com` — role `expert`, diseño
-- `david@vokter.com` — role `expert`, negocios
+Contraseña para todos: `vokter123`
+
+- `demo@vokter.com` — usuario
+- `laura`, `miguel`, `carlos`, `valentina`, `sofia`, `andres`, `david`, `camila`, `ana`, `julian` `@vokter.com` — expertos
+
+## Verificación automática
+
+```bash
+cd backend
+npm run smoke -- https://<servicio>.onrender.com/api   # o http://localhost:4000/api
+```
+
+Recorre salud, catálogo, auth, favoritos y VOKTER AI (19 comprobaciones) y termina con código ≠ 0 si algo falla.
