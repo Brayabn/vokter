@@ -1,1 +1,40 @@
-node_modules/ .env .env.local *.sqlite dist/ build/ .expo/ *.apk .DS_Store
+# Dependencias
+node_modules/
+
+# Variables de entorno (las plantillas .env.example SÍ se versionan)
+.env
+.env.*
+!.env.example
+
+# Bases de datos locales (pueden contener datos personales)
+*.sqlite
+*.sqlite3
+*.db
+
+# Builds y artefactos (el APK se distribuye por GitHub Releases, no en el repo)
+dist/
+build/
+builds/*
+!builds/.gitkeep
+*.apk
+*.aab
+
+# Expo / React Native (carpetas nativas generadas por `expo prebuild`)
+.expo/
+mobile/android/
+mobile/ios/
+
+# Credenciales y firmas
+*.jks
+*.keystore
+*.p8
+*.p12
+*.pem
+*.key
+credentials.json
+
+# Logs y sistema operativo
+npm-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db
