@@ -1,0 +1,6 @@
+# Archivos locales que nunca deben subirse a Vercel (las variables se definen en el panel).
+.env
+.env.*
+!.env.example
+node_modules
+dist
