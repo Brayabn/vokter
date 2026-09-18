@@ -1,23 +1,14 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { colors } from '../theme';
+import Avatar from './Avatar';
 
-const AVATAR_COLORS = ['#E8B04B', '#7DD3FC', '#C4B5FD', '#86EFAC', '#FDA4AF'];
-
-function colorForName(name) {
-  const idx = name.charCodeAt(0) % AVATAR_COLORS.length;
-  return AVATAR_COLORS[idx];
-}
-
-export default function ExpertCard({ expert }) {
-  const initial = expert.name.charAt(0).toUpperCase();
+export default function ExpertCard({ expert, onPress }) {
   const skillsList = (expert.skills || '').split(',').map((s) => s.trim()).filter(Boolean).slice(0, 3);
 
   return (
-    <TouchableOpacity style={styles.card} activeOpacity={0.85}>
+    <TouchableOpacity style={styles.card} activeOpacity={0.85} onPress={onPress} disabled={!onPress}>
       <View style={styles.header}>
-        <View style={[styles.avatar, { backgroundColor: colorForName(expert.name) }]}>
-          <Text style={styles.avatarText}>{initial}</Text>
-        </View>
+        <Avatar name={expert.name} />
         <View style={{ flex: 1 }}>
           <Text style={styles.name} numberOfLines={1}>{expert.name}</Text>
           <Text style={styles.rating}>★ {expert.rating?.toFixed(1)}</Text>
@@ -47,8 +38,6 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.05)',
   },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 10 },
-  avatar: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
-  avatarText: { fontWeight: '800', color: colors.ink, fontSize: 16 },
   name: { color: colors.mist, fontSize: 15, fontWeight: '700' },
   rating: { color: colors.success, fontSize: 12, marginTop: 2 },
   bio: { color: colors.lavender, fontSize: 13, marginBottom: 10, lineHeight: 18 },

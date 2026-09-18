@@ -9,12 +9,13 @@ const STEPS = [
   { title: 'Colabora', text: 'Contacta directamente y avanza en tu proyecto o aprendizaje.' },
 ];
 
+// `slug` debe coincidir con categories.slug del backend (ver backend/src/utils/seed.js)
 const CATEGORIES = [
-  { icon: '📈', name: 'Marketing' },
-  { icon: '💻', name: 'Tecnología' },
-  { icon: '🎨', name: 'Diseño' },
-  { icon: '💼', name: 'Negocios' },
-  { icon: '🎓', name: 'Educación' },
+  { icon: '📈', name: 'Marketing', slug: 'marketing' },
+  { icon: '💻', name: 'Tecnología', slug: 'tecnologia' },
+  { icon: '🎨', name: 'Diseño', slug: 'diseno' },
+  { icon: '💼', name: 'Negocios', slug: 'negocios' },
+  { icon: '🎓', name: 'Educación', slug: 'educacion' },
 ];
 
 export default function Landing() {
@@ -82,8 +83,8 @@ export default function Landing() {
         <div className="flex flex-wrap gap-3">
           {CATEGORIES.map((cat) => (
             <Link
-              key={cat.name}
-              to={`/explorar?categoria=${cat.name.toLowerCase()}`}
+              key={cat.slug}
+              to={`/explorar?categoria=${cat.slug}`}
               className="flex items-center gap-2 rounded-full bg-surface border border-white/5 px-5 py-3 text-mist hover:border-gold/40 transition-colors"
             >
               <span>{cat.icon}</span>

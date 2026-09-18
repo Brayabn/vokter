@@ -1,31 +1,25 @@
-import { useEffect, useState, useCallback } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { useState } from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import api from '../api/client';
+import { useApiRequest } from '../hooks/useApiRequest';
 import { colors } from '../theme';
 import ExpertCard from '../components/ExpertCard';
 import FadeInView from '../components/FadeInView';
+import { LoadingState, ErrorState, EmptyState } from '../components/StateViews';
 
-export default function ExpertsScreen() {
-  const [categories, setCategories] = useState([]);
+export default function ExpertsScreen({ navigation }) {
   const [activeCategory, setActiveCategory] = useState(null);
-  const [experts, setExperts] = useState([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    api.get('/categories').then((res) => setCategories(res.data.categories)).catch(() => {});
-  }, []);
+  const { data: categories } = useApiRequest(
+    () => api.get('/categories').then((res) => res.data.categories),
+    []
+  );
 
-  const fetchExperts = useCallback(() => {
-    setLoading(true);
+  const { data: experts, loading, error, reload } = useApiRequest(() => {
     const params = activeCategory ? { categorySlug: activeCategory } : {};
-    api.get('/experts', { params })
-      .then((res) => setExperts(res.data.experts))
-      .catch(() => setExperts([]))
-      .finally(() => setLoading(false));
+    return api.get('/experts', { params }).then((res) => res.data.experts);
   }, [activeCategory]);
-
-  useEffect(() => { fetchExperts(); }, [fetchExperts]);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -36,7 +30,7 @@ export default function ExpertsScreen() {
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
-          data={categories}
+          data={categories || []}
           keyExtractor={(c) => c.slug}
           style={{ marginTop: 14 }}
           ListHeaderComponent={
@@ -61,16 +55,18 @@ export default function ExpertsScreen() {
       </View>
 
       {loading ? (
-        <ActivityIndicator color={colors.gold} style={{ marginTop: 40 }} />
+        <LoadingState />
+      ) : error ? (
+        <ErrorState message={error} onRetry={reload} />
       ) : (
         <FlatList
           data={experts}
           keyExtractor={(e) => String(e.id)}
           contentContainerStyle={styles.list}
-          ListEmptyComponent={<Text style={styles.empty}>No hay expertos en esta categoría todavía.</Text>}
+          ListEmptyComponent={<EmptyState message="No hay expertos en esta categoría todavía." />}
           renderItem={({ item, index }) => (
             <FadeInView delay={index * 60}>
-              <ExpertCard expert={item} />
+              <ExpertCard expert={item} onPress={() => navigation.navigate('ExpertProfile', { expert: item })} />
             </FadeInView>
           )}
         />
@@ -92,5 +88,4 @@ const styles = StyleSheet.create({
   chipText: { color: colors.lavender, fontSize: 13 },
   chipTextActive: { color: colors.gold },
   list: { padding: 20, paddingTop: 16 },
-  empty: { color: colors.lavender, textAlign: 'center', marginTop: 40 },
 });

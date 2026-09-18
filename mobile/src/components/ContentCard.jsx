@@ -10,7 +10,8 @@ export default function ContentCard({ content, onPress }) {
       </View>
       <Text style={styles.title} numberOfLines={1}>{content.title}</Text>
       <Text style={styles.description} numberOfLines={2}>{content.description}</Text>
-      <Text style={styles.author}>Por {content.author?.name}</Text>
+      {/* GET /favorites no incluye el autor: solo se muestra si viene en los datos */}
+      {!!content.author?.name && <Text style={styles.author}>Por {content.author.name}</Text>}
     </TouchableOpacity>
   );
 }

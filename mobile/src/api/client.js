@@ -2,7 +2,13 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { API_BASE_URL } from '../config';
 
-const api = axios.create({ baseURL: API_BASE_URL, timeout: 10000 });
+const api = axios.create({ baseURL: API_BASE_URL, timeout: 15000 });
+
+// AuthContext registra aquí qué hacer cuando el servidor rechaza el token.
+let unauthorizedHandler = null;
+export function setUnauthorizedHandler(handler) {
+  unauthorizedHandler = handler;
+}
 
 // El token se guarda con SecureStore (Keychain en iOS, Keystore en Android),
 // que lo encripta en el dispositivo — a diferencia de AsyncStorage, que guarda
@@ -14,5 +20,19 @@ api.interceptors.request.use(async (config) => {
   }
   return config;
 });
+
+// Un 401 en una petición que SÍ llevaba token significa sesión expirada o inválida.
+// (El 401 del login, que va sin token, significa "credenciales incorrectas" y no aplica.)
+// Los errores de red no pasan por aquí como 401, así que nunca cierran la sesión.
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const sentToken = Boolean(error.config?.headers?.Authorization);
+    if (error.response?.status === 401 && sentToken && unauthorizedHandler) {
+      unauthorizedHandler();
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default api;

@@ -2,25 +2,41 @@ import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
+import { getErrorMessage } from '../api/errors';
+import { validateLogin } from '../utils/validation';
 import { colors } from '../theme';
 
-export default function LoginScreen({ navigation }) {
+// Se usa en dos lugares: como pestaña "Perfil" (sin sesión) y como modal "Login".
+export default function LoginScreen({ navigation, route }) {
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const isModal = route.name === 'Login';
 
   async function handleSubmit() {
+    const validationError = validateLogin({ email, password });
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
     setError('');
     setLoading(true);
     try {
-      await login(email, password);
+      await login(email.trim(), password);
+      // En la pestaña, al haber usuario se muestra Perfil automáticamente; el modal se cierra.
+      if (isModal) navigation.goBack();
     } catch (err) {
-      setError(err.response?.data?.error || 'No pudimos iniciar tu sesión.');
-    } finally {
+      setError(getErrorMessage(err, 'No pudimos iniciar tu sesión.'));
       setLoading(false);
     }
+  }
+
+  function goToRegister() {
+    // Desde el modal se reemplaza (no se apilan modales); desde la pestaña se abre.
+    if (isModal) navigation.replace('Register');
+    else navigation.navigate('Register');
   }
 
   return (
@@ -54,7 +70,7 @@ export default function LoginScreen({ navigation }) {
             <Text style={styles.buttonText}>{loading ? 'Ingresando...' : 'Ingresar'}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => navigation.navigate('Register')} style={{ marginTop: 16 }}>
+          <TouchableOpacity onPress={goToRegister} style={{ marginTop: 16 }}>
             <Text style={styles.link}>¿No tienes cuenta? Crear cuenta</Text>
           </TouchableOpacity>
 

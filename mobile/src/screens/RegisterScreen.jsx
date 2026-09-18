@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
+import { getErrorMessage } from '../api/errors';
+import { validateRegister } from '../utils/validation';
 import { colors } from '../theme';
 
 export default function RegisterScreen({ navigation }) {
@@ -13,20 +15,27 @@ export default function RegisterScreen({ navigation }) {
   function set(key, value) { setForm((f) => ({ ...f, [key]: value })); }
 
   async function handleSubmit() {
+    const validationError = validateRegister(form);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
     setError('');
     setLoading(true);
     try {
-      await register(form);
+      await register({ ...form, name: form.name.trim(), email: form.email.trim() });
+      navigation.goBack(); // cierra el modal; la sesión ya quedó iniciada
     } catch (err) {
-      setError(err.response?.data?.error || 'No pudimos crear tu cuenta.');
-    } finally {
+      setError(getErrorMessage(err, 'No pudimos crear tu cuenta.'));
       setLoading(false);
     }
   }
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
+      {/* "handled": con el teclado abierto, el toque en "Crear cuenta" llega al botón
+          en vez de solo cerrar el teclado */}
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <Text style={styles.title}>Crea tu cuenta</Text>
         <Text style={styles.subtitle}>Únete como alguien que busca conocimiento, o como experto.</Text>
 
@@ -59,7 +68,7 @@ export default function RegisterScreen({ navigation }) {
           <Text style={styles.buttonText}>{loading ? 'Creando cuenta...' : 'Crear cuenta'}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => navigation.navigate('Login')} style={{ marginTop: 16 }}>
+        <TouchableOpacity onPress={() => navigation.replace('Login')} style={{ marginTop: 16 }}>
           <Text style={styles.link}>¿Ya tienes cuenta? Ingresa aquí</Text>
         </TouchableOpacity>
       </ScrollView>
