@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import api from '../api/client';
+import { getErrorMessage } from '../api/errors';
 import { colors } from '../theme';
 import MatchCard from './MatchCard';
 
@@ -11,6 +13,7 @@ const EXAMPLES = [
 ];
 
 export default function AiMatchWidget() {
+  const navigation = useNavigation();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -27,8 +30,8 @@ export default function AiMatchWidget() {
     try {
       const res = await api.post('/ai/match', { query: q });
       setResults(res.data.results);
-    } catch {
-      setError('No pudimos procesar tu consulta. Verifica tu conexión con el backend.');
+    } catch (err) {
+      setError(getErrorMessage(err, 'No pudimos procesar tu consulta. Intenta de nuevo.'));
     } finally {
       setLoading(false);
     }
@@ -43,6 +46,8 @@ export default function AiMatchWidget() {
           placeholderTextColor={colors.lavender}
           value={query}
           onChangeText={setQuery}
+          onSubmitEditing={() => handleSearch()}
+          returnKeyType="search"
         />
         <TouchableOpacity style={styles.button} onPress={() => handleSearch()} disabled={loading}>
           {loading ? <ActivityIndicator color={colors.ink} /> : <Text style={styles.buttonText}>Buscar</Text>}
@@ -72,7 +77,9 @@ export default function AiMatchWidget() {
               ? `Encontramos ${results.length} coincidencia${results.length > 1 ? 's' : ''}`
               : 'No encontramos coincidencias todavía.'}
           </Text>
-          {results.map((m) => <MatchCard key={m.id} match={m} />)}
+          {results.map((m) => (
+            <MatchCard key={m.id} match={m} onPress={() => navigation.navigate('ExpertProfile', { expert: m })} />
+          ))}
         </View>
       )}
     </View>

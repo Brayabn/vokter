@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { colors } from '../theme';
 
-export default function MatchCard({ match }) {
+export default function MatchCard({ match, onPress }) {
   return (
     <View style={styles.card}>
       <View style={styles.row}>
@@ -13,7 +13,7 @@ export default function MatchCard({ match }) {
       <Text style={styles.bio} numberOfLines={2}>{match.bio}</Text>
       <View style={styles.footer}>
         <Text style={styles.rating}>★ {match.rating?.toFixed(1)}</Text>
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity style={styles.button} onPress={onPress}>
           <Text style={styles.buttonText}>Ver perfil</Text>
         </TouchableOpacity>
       </View>

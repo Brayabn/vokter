@@ -1,23 +1,27 @@
-import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/client';
+import { useApiRequest } from '../hooks/useApiRequest';
 import AiMatchWidget from '../components/AiMatchWidget';
 import ExpertCard from '../components/ExpertCard';
 import FadeInView from '../components/FadeInView';
+import { LoadingState, ErrorState } from '../components/StateViews';
 import { colors } from '../theme';
+
+// Categorías y expertos destacados en una sola carga: un único estado de error/reintento.
+async function fetchHomeData() {
+  const [categoriesRes, expertsRes] = await Promise.all([api.get('/categories'), api.get('/experts')]);
+  return {
+    categories: categoriesRes.data.categories,
+    topExperts: expertsRes.data.experts.slice(0, 4),
+  };
+}
 
 export default function HomeScreen({ navigation }) {
   const { user } = useAuth();
-  const [categories, setCategories] = useState([]);
-  const [topExperts, setTopExperts] = useState([]);
-  const [loadingExperts, setLoadingExperts] = useState(true);
-
-  useEffect(() => {
-    api.get('/categories').then((res) => setCategories(res.data.categories)).catch(() => {});
-    api.get('/experts').then((res) => setTopExperts(res.data.experts.slice(0, 4))).catch(() => {}).finally(() => setLoadingExperts(false));
-  }, []);
+  const { data, loading, error, reload } = useApiRequest(fetchHomeData, []);
+  const categories = data?.categories || [];
 
   const hour = new Date().getHours();
   const greeting = user
@@ -42,35 +46,43 @@ export default function HomeScreen({ navigation }) {
           <AiMatchWidget />
         </FadeInView>
 
-        <FadeInView delay={180}>
-          <Text style={styles.sectionTitle}>Explora por categoría</Text>
-          <View style={styles.categoriesGrid}>
-            {categories.map((c) => (
-              <TouchableOpacity
-                key={c.slug}
-                style={styles.categoryPill}
-                onPress={() => navigation.navigate('Explorar', { categorySlug: c.slug })}
-              >
-                <Text style={styles.categoryIcon}>{c.icon}</Text>
-                <Text style={styles.categoryText}>{c.name}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </FadeInView>
+        {error && <ErrorState message={error} onRetry={reload} />}
 
-        <FadeInView delay={240}>
-          <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionTitle}>Expertos destacados</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Expertos')}>
-              <Text style={styles.link}>Ver todos</Text>
-            </TouchableOpacity>
-          </View>
-          {loadingExperts ? (
-            <ActivityIndicator color={colors.gold} style={{ marginTop: 12 }} />
-          ) : (
-            topExperts.map((e) => <ExpertCard key={e.id} expert={e} />)
-          )}
-        </FadeInView>
+        {categories.length > 0 && (
+          <FadeInView delay={180}>
+            <Text style={styles.sectionTitle}>Explora por categoría</Text>
+            <View style={styles.categoriesGrid}>
+              {categories.map((c) => (
+                <TouchableOpacity
+                  key={c.slug}
+                  style={styles.categoryPill}
+                  onPress={() => navigation.navigate('Explorar', { categorySlug: c.slug })}
+                >
+                  <Text style={styles.categoryIcon}>{c.icon}</Text>
+                  <Text style={styles.categoryText}>{c.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </FadeInView>
+        )}
+
+        {!error && (
+          <FadeInView delay={240}>
+            <View style={styles.sectionHeaderRow}>
+              <Text style={styles.sectionTitle}>Expertos destacados</Text>
+              <TouchableOpacity onPress={() => navigation.navigate('Expertos')}>
+                <Text style={styles.link}>Ver todos</Text>
+              </TouchableOpacity>
+            </View>
+            {loading ? (
+              <LoadingState />
+            ) : (
+              data.topExperts.map((e) => (
+                <ExpertCard key={e.id} expert={e} onPress={() => navigation.navigate('ExpertProfile', { expert: e })} />
+              ))
+            )}
+          </FadeInView>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

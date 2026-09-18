@@ -1,17 +1,19 @@
-import { useEffect, useState, useCallback } from 'react';
-import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { useEffect, useState } from 'react';
+import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import api from '../api/client';
+import { useApiRequest } from '../hooks/useApiRequest';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { colors } from '../theme';
 import ContentCard from '../components/ContentCard';
 import FadeInView from '../components/FadeInView';
+import { LoadingState, ErrorState, EmptyState } from '../components/StateViews';
 
 export default function ExploreScreen({ navigation, route }) {
-  const [categories, setCategories] = useState([]);
   const [activeCategory, setActiveCategory] = useState(route.params?.categorySlug || null);
   const [search, setSearch] = useState('');
-  const [contents, setContents] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // La petición se hace cuando el usuario deja de escribir, no en cada tecla.
+  const debouncedSearch = useDebouncedValue(search.trim(), 400);
 
   useEffect(() => {
     if (route.params?.categorySlug) {
@@ -19,22 +21,21 @@ export default function ExploreScreen({ navigation, route }) {
     }
   }, [route.params?.categorySlug]);
 
-  useEffect(() => {
-    api.get('/categories').then((res) => setCategories(res.data.categories)).catch(() => {});
-  }, []);
+  const { data: categories } = useApiRequest(
+    () => api.get('/categories').then((res) => res.data.categories),
+    []
+  );
 
-  const fetchContents = useCallback(() => {
-    setLoading(true);
+  const { data: contents, loading, error, reload } = useApiRequest(() => {
     const params = {};
-    if (search) params.search = search;
+    if (debouncedSearch) params.search = debouncedSearch;
     if (activeCategory) params.categorySlug = activeCategory;
-    api.get('/contents', { params })
-      .then((res) => setContents(res.data.contents))
-      .catch(() => setContents([]))
-      .finally(() => setLoading(false));
-  }, [search, activeCategory]);
+    return api.get('/contents', { params }).then((res) => res.data.contents);
+  }, [debouncedSearch, activeCategory]);
 
-  useEffect(() => { fetchContents(); }, [fetchContents]);
+  const emptyMessage = debouncedSearch
+    ? `No encontramos resultados para "${debouncedSearch}".`
+    : 'No hay contenidos en esta categoría todavía.';
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -46,13 +47,12 @@ export default function ExploreScreen({ navigation, route }) {
           placeholderTextColor={colors.lavender}
           value={search}
           onChangeText={setSearch}
-          onSubmitEditing={fetchContents}
           returnKeyType="search"
         />
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
-          data={categories}
+          data={categories || []}
           keyExtractor={(c) => c.slug}
           style={{ marginTop: 12 }}
           renderItem={({ item }) => (
@@ -69,13 +69,16 @@ export default function ExploreScreen({ navigation, route }) {
       </View>
 
       {loading ? (
-        <ActivityIndicator color={colors.gold} style={{ marginTop: 40 }} />
+        <LoadingState />
+      ) : error ? (
+        <ErrorState message={error} onRetry={reload} />
       ) : (
         <FlatList
           data={contents}
           keyExtractor={(c) => String(c.id)}
           contentContainerStyle={styles.list}
-          ListEmptyComponent={<Text style={styles.empty}>No encontramos resultados.</Text>}
+          keyboardShouldPersistTaps="handled"
+          ListEmptyComponent={<EmptyState message={emptyMessage} />}
           renderItem={({ item, index }) => (
             <FadeInView delay={index * 50}>
               <ContentCard content={item} onPress={() => navigation.navigate('ContentDetail', { id: item.id })} />
@@ -103,5 +106,4 @@ const styles = StyleSheet.create({
   chipText: { color: colors.lavender, fontSize: 13 },
   chipTextActive: { color: colors.gold },
   list: { padding: 20, paddingTop: 16 },
-  empty: { color: colors.lavender, textAlign: 'center', marginTop: 40 },
 });
