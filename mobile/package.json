@@ -1,0 +1,27 @@
+{
+  "name": "vokter-mobile",
+  "version": "1.0.0",
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
+    "axios": "^1.20.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "react-router-dom": "^7.18.4"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.24.0",
+    "@capacitor/cli": "^8.5.2",
+    "@vitejs/plugin-react": "^6.1.1",
+    "babel-preset-expo": "^57.0.12",
+    "vite": "^8.3.0"
+  },
+  "private": true
+}
