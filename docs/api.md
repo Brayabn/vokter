@@ -1,7 +1,7 @@
 # API de VØKTER
 
 - **Local:** `http://localhost:4000/api` (o el `PORT` de `backend/.env`)
-- **Producción:** `https://<servicio>.onrender.com/api` (ver README → URLs públicas)
+- **Producción:** `https://vokter-api-2571.onrender.com/api` (Render + Neon PostgreSQL)
 
 Todas las respuestas son JSON. Los errores controlados tienen la forma `{ "error": "mensaje" }`.
 

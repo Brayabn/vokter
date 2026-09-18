@@ -8,11 +8,15 @@ los expertos más afines con un porcentaje de coincidencia.
 
 | Recurso | URL |
 |---|---|
-| Web | _pendiente de despliegue (Vercel)_ |
-| API | _pendiente de despliegue (Render)_ |
-| Descarga del APK | _pendiente (GitHub Release)_ — también desde la web en `/descarga` (botón + QR) |
+| **Web** (Vercel) | <https://vokter-web.vercel.app> |
+| **Descarga de la app** (botón + QR) | <https://vokter-web.vercel.app/descarga> |
+| **API** (Render) | <https://vokter-api-2571.onrender.com/api> · salud: [`/api/health`](https://vokter-api-2571.onrender.com/api/health) |
+| **APK** (GitHub Release v1.0.0) | <https://github.com/Brayabn/vokter/releases/download/v1.0.0/VOKTER-Android-v1.0.0.apk> |
+| Release | <https://github.com/Brayabn/vokter/releases/tag/v1.0.0> |
+| Build EAS | <https://expo.dev/accounts/brayan.bello/projects/vokter-mobile/builds/0e14c037-f29a-4720-81ed-b8c174b9e60d> |
 
-> Estas URLs se completan solo cuando el servicio está desplegado y verificado.
+> La API usa el plan gratuito de Render: tras ~15 min sin tráfico la primera petición tarda 30-60 s.
+> Antes de una demo, abre [`/api/health`](https://vokter-api-2571.onrender.com/api/health) para despertarla.
 
 ## Descripción
 
@@ -168,15 +172,24 @@ Guía paso a paso: [`docs/deploy.md`](docs/deploy.md). Resumen:
 ## APK
 
 - Package `com.vokter.app` · versión `1.0.0` · versionCode `1` · Android 7.0+ (minSdk 24, targetSdk 36).
-- Generado con EAS Build, perfil `preview` (`buildType: apk`).
-- La URL del API se incrusta al compilar desde `eas.json`; antes de publicar se verifica que el bundle
-  contenga la URL HTTPS del API y **ninguna** referencia a `localhost` o IPs privadas.
+- Generado con EAS Build, perfil `preview` (`buildType: apk`), firmado con el keystore gestionado por EAS.
+- Archivo: `VOKTER-Android-v1.0.0.apk` · 77.437.218 bytes (73,9 MB) ·
+  SHA-256 `b75591429102924bd34beeee36d4c6b2526cf392d08bf8395fea80772eb2df60`.
+- La URL del API se incrusta al compilar desde `eas.json` (`EXPO_PUBLIC_API_URL`). Verificación del
+  bundle embebido (`assets/index.android.bundle`): contiene `https://vokter-api-2571.onrender.com/api`,
+  **ninguna IP privada** (192.168.x, 172.16-31.x, 10.x) ni URLs de túnel. La única cadena `localhost`
+  es un valor interno de axios (`window.location.href || 'http://localhost'`), no configuración del proyecto.
 
 ## Descarga mediante QR
 
-La página **`/descarga`** muestra la versión, la compatibilidad, los pasos de instalación, el botón
-**Descargar APK** y un **código QR**. Ambos usan exactamente la misma URL (`VITE_APK_URL`), que apunta
-al asset del GitHub Release. Escanear el QR con la cámara de un Android abre la descarga directa.
+La página **[`/descarga`](https://vokter-web.vercel.app/descarga)** muestra la versión, la compatibilidad,
+los pasos de instalación, el botón **Descargar APK** y un **código QR**. Ambos usan exactamente la misma
+URL (`VITE_APK_URL`):
+
+`https://github.com/Brayabn/vokter/releases/download/v1.0.0/VOKTER-Android-v1.0.0.apk`
+
+Flujo verificado: web → QR/botón → GitHub Release → descarga del APK → instalación (orígenes
+desconocidos) → app → API HTTPS de Render → PostgreSQL de Neon.
 
 ## Credenciales demo
 
@@ -227,14 +240,30 @@ Más detalle y alternativas descartadas: [`docs/architecture.md`](docs/architect
 
 - **Arranque en frío** (plan gratuito de Render): la primera petición tras ~15 min sin uso tarda 30-60 s. Conviene abrir `/api/health` antes de una demo.
 - El **contacto directo** con expertos está marcado como "próximamente" (no existe en el backend).
-- **APK fuera de Play Store**: Android pide permitir "orígenes desconocidos" y Play Protect puede advertir.
+- **APK fuera de Play Store**: Chrome advierte "File might be harmful" al descargar un APK, Android pide permitir "orígenes desconocidos" y Play Protect puede advertir. Es el comportamiento estándar para apps fuera de la tienda.
+- Tras crear una cuenta en la app, el teclado puede quedar visible hasta tocar fuera (detalle menor de UX pendiente).
 - Solo **Android** (no hay build de iOS).
 - VOKTER AI compara palabras clave y raíces; no entiende sinónimos como lo haría un LLM.
 - Sin migraciones formales: cambios de esquema futuros deberían introducirlas.
 
 ## Evidencia de funcionamiento
 
-- Prueba de humo de la API (19 comprobaciones): `npm run smoke -- <URL>`.
-- Verificado en local contra **PostgreSQL 16** (modo producción) y **SQLite**: esquema, restricciones, seed idempotente, persistencia tras reinicio y CORS.
-- App probada en Android 14 (emulador) con Expo Go: login, registro, favoritos, VOKTER AI, sesión sin red, logout.
-- _Capturas y verificación del entorno público: se agregan tras el despliegue._
+**Entorno público (verificado):**
+
+- API en Render sobre Neon: `npm run smoke -- https://vokter-api-2571.onrender.com/api` → **19/19**; `/api/health` → `{"status":"ok","database":"postgres"}`; CORS acepta `https://vokter-web.vercel.app` y rechaza otros orígenes.
+- Web en Vercel: todas las rutas (`/`, `/login`, `/registro`, `/explorar`, `/descarga`, `/dashboard`, `/favoritos`, `/experto/:id`, `/contenido/:id`) responden 200; el build incluye la API de Render y la URL real del APK; flujo de registro, login, búsqueda, favoritos y VOKTER AI verificado con el origen real de la web.
+- APK instalado en Android 14: splash, login, registro, explorar, detalle, favoritos (guardados en Neon), VOKTER AI, perfil de experto y logout contra la API pública.
+- `/descarga` abierta en Chrome de Android: el QR decodificado desde la pantalla contiene exactamente la URL del asset; el botón descargó el APK (SHA-256 idéntico) y se instaló con el instalador del sistema.
+- Persistencia: un usuario creado en producción sigue disponible tras el paso del tiempo (datos en Neon, no en el contenedor).
+
+**Local:** verificado contra PostgreSQL 16 (modo producción) y SQLite: esquema, restricciones, seed idempotente, persistencia tras reinicio y CORS.
+
+### Capturas
+
+| Splash | Inicio | VOKTER AI | Perfil de experto | Detalle |
+|---|---|---|---|---|
+| ![Splash](docs/screenshots/01-app-splash.png) | ![Inicio](docs/screenshots/02-app-inicio.png) | ![VOKTER AI](docs/screenshots/03-app-vokter-ai.png) | ![Perfil de experto](docs/screenshots/04-app-perfil-experto.png) | ![Detalle](docs/screenshots/05-app-detalle.png) |
+
+| Favoritos | Perfil | Web `/descarga` | Web `/descarga` (QR) |
+|---|---|---|---|
+| ![Favoritos](docs/screenshots/06-app-favoritos.png) | ![Perfil](docs/screenshots/07-app-perfil.png) | ![Descarga](docs/screenshots/08-web-descarga.png) | ![QR](docs/screenshots/09-web-descarga-qr.png) |
