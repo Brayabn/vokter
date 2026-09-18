@@ -25,7 +25,12 @@
       "bundleIdentifier": "com.vokter.app"
     },
     "plugins": [
-      ["expo-status-bar", { "style": "light" }],
+      [
+        "expo-status-bar",
+        {
+          "style": "light"
+        }
+      ],
       [
         "expo-splash-screen",
         {
@@ -35,6 +40,15 @@
           "backgroundColor": "#12172B"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "expo-status-bar": {
+        "style": "light"
+      },
+      "eas": {
+        "projectId": "fbb31e37-682d-4582-ba68-f0e00a43cfbe"
+      }
+    },
+    "owner": "brayan.bello"
   }
 }
