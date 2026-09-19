@@ -18,6 +18,91 @@ los expertos más afines con un porcentaje de coincidencia.
 > La API usa el plan gratuito de Render: tras ~15 min sin tráfico la primera petición tarda 30-60 s.
 > Antes de una demo, abre [`/api/health`](https://vokter-api-2571.onrender.com/api/health) para despertarla.
 
+# Instalación rápida con Docker
+
+La forma más sencilla de ejecutar VØKTER en tu equipo: web + API + PostgreSQL con un solo comando.
+
+### Requisitos
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (en ejecución)
+- Git
+
+**No** hace falta instalar Node.js, npm ni PostgreSQL.
+
+### Iniciar
+
+```bash
+git clone https://github.com/Brayabn/vokter.git
+cd vokter
+docker compose up --build
+```
+
+La primera vez tarda unos minutos (descarga imágenes e instala dependencias). Cuando los tres
+servicios estén listos:
+
+| Servicio | URL |
+|---|---|
+| **Web** | <http://localhost:8080> |
+| **API** | <http://localhost:4100/api> (salud: <http://localhost:4100/api/health>) |
+
+La base de datos se crea y se llena con datos demo automáticamente. Usa las
+[credenciales demo](#credenciales-demo): `demo@vokter.com` / `vokter123`.
+
+No hace falta crear ningún archivo `.env`: todos los valores tienen un default de desarrollo. Para
+cambiar puertos o credenciales locales, copia [`.env.example`](.env.example) como `.env`.
+
+### Comandos útiles
+
+| Acción | Comando |
+|---|---|
+| Iniciar (con build) | `docker compose up --build` |
+| Iniciar en segundo plano | `docker compose up -d --build` |
+| Ver estado | `docker compose ps` |
+| Ver logs | `docker compose logs -f` |
+| Detener (conserva los datos) | `docker compose down` |
+| Reiniciar | `docker compose restart` |
+| Consola de PostgreSQL | `docker compose exec database psql -U vokter -d vokter` |
+| **Eliminar los datos locales** | `docker compose down -v` ⚠️ borra el volumen de la base de datos |
+
+### Cómo funciona
+
+```
+docker compose
+├── frontend  nginx :8080 → sirve la web (build de Vite) y reenvía /api → backend
+├── backend   Node + Express :4100 → espera a que PostgreSQL esté healthy, crea tablas y datos demo
+└── database  PostgreSQL 16 → volumen postgres_data (los datos sobreviven a "down")
+```
+
+- La web se compila con `VITE_API_URL=/api` (mismo origen). El navegador llama a
+  `http://localhost:8080/api/...` y **nginx** reenvía a `backend:4100` dentro de la red de Docker, así
+  el navegador nunca necesita resolver el nombre interno `backend` y no hay problemas de CORS.
+- La API también se publica en `localhost:4100` para pruebas directas y para la app móvil.
+- Arranque en orden con healthchecks: `database` (`pg_isready`) → `backend` (`/api/health`, que
+  también comprueba la BD) → `frontend`.
+- PostgreSQL **no** se publica en el equipo (evita conflictos con un PostgreSQL local en 5432).
+- Puertos elegidos para no chocar con servicios comunes (3000, 4000, 5432); se cambian con
+  `WEB_PORT` y `API_PORT` en `.env`.
+
+> **Si un puerto ya está en uso:** crea `.env` con, por ejemplo, `WEB_PORT=8081` o `API_PORT=4200`
+> y vuelve a ejecutar `docker compose up -d`.
+
+### App móvil con el backend de Docker
+
+La app Android **no** corre en Docker (se compila con Expo/EAS). Para probarla contra el backend
+local, en `mobile/.env` usa la IP de tu PC en la red: `EXPO_PUBLIC_API_URL=http://<IP-de-tu-PC>:4100/api`
+y ejecuta `npx expo start`. El APK publicado usa siempre la API de producción.
+
+### Local vs. producción
+
+| Entorno | Web | API | Base de datos |
+|---|---|---|---|
+| **Local (Docker)** | nginx en `localhost:8080` | contenedor `backend` (`localhost:4100`) | PostgreSQL en contenedor (volumen `postgres_data`) |
+| **Producción** | Vercel | Render | Neon (PostgreSQL gestionado) |
+| **App móvil (APK)** | — | Render | Neon |
+
+Docker es solo para instalación y demostración local; **no** reemplaza la infraestructura de
+producción. Los Dockerfiles no se usan en Render (runtime Node nativo, `render.yaml`) ni en Vercel.
+
 ## Descripción
 
 VØKTER toma como referencia la plataforma [VOKTER](https://vokter-five.vercel.app/) y la evoluciona
@@ -71,34 +156,36 @@ flujos (auth, web, móvil, descarga): [`docs/flows.md`](docs/flows.md).
 - **Web:** React 18, Vite 5, Tailwind CSS 3, React Router 6, axios, qrcode.react, anime.js.
 - **Móvil:** Expo SDK 57, React Native 0.86, React Navigation 7, expo-secure-store, axios.
 - **Infraestructura:** Render (API), Neon (PostgreSQL), Vercel (web), EAS Build (APK), GitHub Releases (descarga).
+- **Local:** Docker Compose (nginx + Node + PostgreSQL 16).
 
 ## Estructura del proyecto
 
 ```
 .
-├── backend/           API REST (Express + Sequelize)
+├── backend/           API REST (Express + Sequelize) · Dockerfile
 │   ├── src/           config · models · controllers · routes · middleware · utils
 │   └── scripts/       smoke-test.js (verificación de la API en cualquier entorno)
-├── frontend/          Web (React + Vite) · vercel.json
+├── frontend/          Web (React + Vite) · vercel.json · Dockerfile + nginx.conf
 ├── mobile/            App Android (Expo) · app.json · eas.json
 ├── database/          schema.sql (esquema PostgreSQL de referencia)
-├── docs/              arquitectura, flujos, API y despliegue
+├── docs/              arquitectura, flujos, API, despliegue y capturas
 ├── builds/            APKs locales (ignorados por git; se publican en Releases)
-├── render.yaml        Blueprint de Render (API como código)
-└── docker-compose.yml backend + web en contenedores (desarrollo)
+├── render.yaml        Blueprint de Render (API de producción como código)
+├── docker-compose.yml instalación local: web + API + PostgreSQL
+└── .env.example       variables opcionales de docker compose
 ```
 
 ## Requisitos
 
-- Node.js ≥ 20 y npm.
+- **Con Docker** (recomendado para evaluar): Docker Desktop y Git. Ver [Instalación rápida con Docker](#instalación-rápida-con-docker).
+- **Sin Docker** (desarrollo): Node.js ≥ 20 y npm. Sin base de datos que instalar: se usa SQLite.
 - Para probar la app en un teléfono: [Expo Go](https://expo.dev/go) (SDK 57) en la misma red Wi-Fi que el PC, o el APK.
-- Sin base de datos que instalar en local: se usa SQLite.
 
-## Instalación local
+## Instalación local sin Docker (desarrollo)
 
 ```bash
-git clone <este-repositorio>
-cd <repositorio>
+git clone https://github.com/Brayabn/vokter.git
+cd vokter
 ```
 
 ### Backend
@@ -257,6 +344,8 @@ Más detalle y alternativas descartadas: [`docs/architecture.md`](docs/architect
 - Persistencia: un usuario creado en producción sigue disponible tras el paso del tiempo (datos en Neon, no en el contenedor).
 
 **Local:** verificado contra PostgreSQL 16 (modo producción) y SQLite: esquema, restricciones, seed idempotente, persistencia tras reinicio y CORS.
+
+**Docker:** `docker compose build` + `up -d` → los tres servicios `healthy` en orden; smoke test 19/19 tanto directo (`localhost:4100/api`) como a través de nginx (`localhost:8080/api`); todas las rutas de la web responden; los datos (incluidos usuarios registrados) sobreviven a `docker compose restart` y a `down` + `up`, y el seed no duplica registros. Las imágenes no contienen `.env`, tokens ni SQLite, y el backend corre sin privilegios de root.
 
 ### Capturas
 

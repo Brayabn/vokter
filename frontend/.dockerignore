@@ -1,7 +1,15 @@
+# Nada de esto debe entrar en el contexto de build ni en la imagen.
+# (.env.local contiene tokens de Vercel CLI; .vercel, ids del proyecto.)
 node_modules
-npm-debug.log
+dist
+build
+npm-debug.log*
+*.log
 .env
+.env.*
+!.env.example
+.vercel
 .git
 .gitignore
 Dockerfile
-dist
+.dockerignore
