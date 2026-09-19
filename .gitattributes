@@ -1,2 +1,9 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Archivos que se ejecutan dentro de contenedores Linux: siempre LF,
+# también al clonar en Windows (evita errores por finales de línea CRLF).
+Dockerfile text eol=lf
+*.conf text eol=lf
+*.sh text eol=lf
+docker-compose.yml text eol=lf

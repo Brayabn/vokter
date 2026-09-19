@@ -29,6 +29,19 @@ flowchart LR
 | API | Node 20, Express 4, Sequelize 6, JWT, bcrypt | Render (web service) | `DATABASE_URL`, `JWT_SECRET`, `CORS_ORIGIN`, `NODE_ENV` |
 | Datos | PostgreSQL | Neon (serverless) | `DATABASE_URL` con TLS |
 | Desarrollo | SQLite | archivo local | sin `DATABASE_URL` |
+| Local con Docker | nginx + Node + PostgreSQL 16 | `docker compose` | defaults en `docker-compose.yml` (opcional `.env`) |
+
+### Entornos
+
+```
+LOCAL (docker compose)                 PRODUCCIÓN                      MÓVIL
+nginx :8080 ──/api──▶ backend :4100    Vercel ──HTTPS──▶ Render         APK ──HTTPS──▶ Render
+                         │                                  │                             │
+                  PostgreSQL (volumen)                    Neon                          Neon
+```
+
+Docker solo facilita la instalación y demostración local; no reemplaza ni modifica la
+infraestructura de producción.
 
 ## Estructura del backend
 

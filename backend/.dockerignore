@@ -1,6 +1,15 @@
+# Nada de esto debe entrar en el contexto de build ni en la imagen.
 node_modules
-npm-debug.log
+npm-debug.log*
+*.log
 .env
+.env.*
+!.env.example
+data
+*.sqlite
+*.sqlite3
+*.db
 .git
 .gitignore
 Dockerfile
+.dockerignore

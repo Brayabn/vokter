@@ -3,6 +3,11 @@
 Orden recomendado: **Neon → Render (API) → EAS (APK) → GitHub Release → Vercel (web) → CORS**.
 Ningún secreto se guarda en el repositorio: todos se definen en el panel de cada plataforma.
 
+> **Local vs. producción.** `docker-compose.yml` (web + API + PostgreSQL en contenedores) es solo
+> para instalación y demostración local — ver README → *Instalación rápida con Docker*. Producción no
+> usa esos contenedores: Render ejecuta el backend con su runtime Node nativo (`render.yaml`), Vercel
+> compila la web con Vite y la base de datos es Neon.
+
 ## 1. Base de datos — Neon (PostgreSQL)
 
 1. Crear un proyecto en <https://neon.tech> (plan gratuito).
