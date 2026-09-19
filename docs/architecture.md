@@ -35,7 +35,7 @@ flowchart LR
 
 ```
 LOCAL (docker compose)                 PRODUCCIÓN                      MÓVIL
-nginx :8080 ──/api──▶ backend :4100    Vercel ──HTTPS──▶ Render         APK ──HTTPS──▶ Render
+nginx :3000 ──/api──▶ backend :4100    Vercel ──HTTPS──▶ Render         APK ──HTTPS──▶ Render
                          │                                  │                             │
                   PostgreSQL (volumen)                    Neon                          Neon
 ```

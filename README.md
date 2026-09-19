@@ -18,16 +18,16 @@ los expertos más afines con un porcentaje de coincidencia.
 > La API usa el plan gratuito de Render: tras ~15 min sin tráfico la primera petición tarda 30-60 s.
 > Antes de una demo, abre [`/api/health`](https://vokter-api-2571.onrender.com/api/health) para despertarla.
 
-# Instalación rápida con Docker
+# 🚀 Instalación rápida con Docker
 
-La forma más sencilla de ejecutar VØKTER en tu equipo: web + API + PostgreSQL con un solo comando.
+La forma más sencilla de ejecutar VØKTER en tu equipo: **web + API + PostgreSQL** con un solo comando.
 
 ### Requisitos
 
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (en ejecución)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (abierto y en ejecución)
 - Git
 
-**No** hace falta instalar Node.js, npm ni PostgreSQL.
+**No** hace falta instalar Node.js, npm ni PostgreSQL: todo corre dentro de los contenedores.
 
 ### Iniciar
 
@@ -37,71 +37,140 @@ cd vokter
 docker compose up --build
 ```
 
-La primera vez tarda unos minutos (descarga imágenes e instala dependencias). Cuando los tres
-servicios estén listos:
+La primera vez tarda unos minutos (descarga imágenes, instala dependencias y compila la web). Está
+lista cuando los tres servicios aparecen como `healthy` en `docker compose ps`.
+
+### Abrir la aplicación
 
 | Servicio | URL |
 |---|---|
-| **Web** | <http://localhost:8080> |
-| **API** | <http://localhost:4100/api> (salud: <http://localhost:4100/api/health>) |
+| **Web** | <http://localhost:3000> |
+| **API** | <http://localhost:4100/api> |
+| Salud de la API | <http://localhost:4100/api/health> → `{"status":"ok","database":"postgres"}` |
 
-La base de datos se crea y se llena con datos demo automáticamente. Usa las
-[credenciales demo](#credenciales-demo): `demo@vokter.com` / `vokter123`.
+La base de datos se crea y se llena con datos demo automáticamente. Entra con las
+[credenciales demo](#credenciales-demo) **`demo@vokter.com` / `vokter123`** o crea tu propia cuenta
+en *Registro*.
 
 No hace falta crear ningún archivo `.env`: todos los valores tienen un default de desarrollo. Para
 cambiar puertos o credenciales locales, copia [`.env.example`](.env.example) como `.env`.
 
-### Comandos útiles
+### Detener
+
+```bash
+docker compose down
+```
+
+Detiene y elimina los contenedores. **Los datos se conservan** en el volumen `postgres_data`: al
+volver a ejecutar `docker compose up` siguen ahí.
+
+### Logs
+
+```bash
+docker compose logs -f            # todos los servicios
+docker compose logs -f backend    # solo la API
+```
+
+### Reiniciar
+
+```bash
+docker compose restart
+```
+
+### Eliminar datos
+
+```bash
+docker compose down -v
+```
+
+> ⚠️ **`down -v` elimina la base de datos local** (el volumen `postgres_data`): se pierden los
+> usuarios registrados y los favoritos. En el siguiente `up` se crea vacía y se vuelven a cargar los
+> datos demo. Úsalo solo si quieres empezar de cero.
+
+### Otros comandos
 
 | Acción | Comando |
 |---|---|
-| Iniciar (con build) | `docker compose up --build` |
 | Iniciar en segundo plano | `docker compose up -d --build` |
-| Ver estado | `docker compose ps` |
-| Ver logs | `docker compose logs -f` |
-| Detener (conserva los datos) | `docker compose down` |
-| Reiniciar | `docker compose restart` |
+| Ver estado y healthchecks | `docker compose ps` |
 | Consola de PostgreSQL | `docker compose exec database psql -U vokter -d vokter` |
-| **Eliminar los datos locales** | `docker compose down -v` ⚠️ borra el volumen de la base de datos |
 
-### Cómo funciona
+### Si un puerto ya está en uso
+
+Si `docker compose up` falla con *port is already allocated* (por ejemplo, otra app usa el 3000),
+cambia el puerto de la web o de la API:
+
+```bash
+# Git Bash / macOS / Linux
+WEB_PORT=8080 docker compose up --build
+
+# PowerShell
+$env:WEB_PORT=8080; docker compose up --build
+```
+
+o crea un `.env` (a partir de `.env.example`) con `WEB_PORT=8080` / `API_PORT=4200`. La web quedará
+en `http://localhost:8080`.
+
+## Arquitectura por entorno
+
+### Local — Docker Compose
 
 ```
-docker compose
-├── frontend  nginx :8080 → sirve la web (build de Vite) y reenvía /api → backend
-├── backend   Node + Express :4100 → espera a que PostgreSQL esté healthy, crea tablas y datos demo
-└── database  PostgreSQL 16 → volumen postgres_data (los datos sobreviven a "down")
+Docker Compose
+├── Frontend   nginx          localhost:3000  → sirve la web (build de Vite) y reenvía /api → backend:4100
+├── Backend    Node/Express   localhost:4100  → espera a PostgreSQL, crea tablas y datos demo
+└── PostgreSQL 16             (solo red interna) → volumen postgres_data
+```
+
+```
+Navegador ──▶ localhost:3000 (nginx) ──/api──▶ backend:4100 ──▶ database:5432
 ```
 
 - La web se compila con `VITE_API_URL=/api` (mismo origen). El navegador llama a
-  `http://localhost:8080/api/...` y **nginx** reenvía a `backend:4100` dentro de la red de Docker, así
-  el navegador nunca necesita resolver el nombre interno `backend` y no hay problemas de CORS.
-- La API también se publica en `localhost:4100` para pruebas directas y para la app móvil.
+  `http://localhost:3000/api/...` y **nginx** reenvía la petición a `backend:4100` dentro de la red de
+  Docker. Así el navegador nunca necesita resolver el nombre interno `backend` y no hay problemas de CORS.
+- La API también se publica en `localhost:4100` para pruebas directas (curl, Postman) y para la app móvil.
 - Arranque en orden con healthchecks: `database` (`pg_isready`) → `backend` (`/api/health`, que
   también comprueba la BD) → `frontend`.
 - PostgreSQL **no** se publica en el equipo (evita conflictos con un PostgreSQL local en 5432).
-- Puertos elegidos para no chocar con servicios comunes (3000, 4000, 5432); se cambian con
-  `WEB_PORT` y `API_PORT` en `.env`.
+  El backend se conecta por la `DATABASE_URL` interna `postgresql://vokter:…@database:5432/vokter`.
+- El seed es idempotente (`findOrCreate`): reiniciar no duplica usuarios, categorías, contenidos ni expertos.
 
-> **Si un puerto ya está en uso:** crea `.env` con, por ejemplo, `WEB_PORT=8081` o `API_PORT=4200`
-> y vuelve a ejecutar `docker compose up -d`.
+### Producción
+
+```
+Vercel (web)
+   ↓  HTTPS + JWT
+Render (API)
+   ↓  TLS
+Neon (PostgreSQL)
+```
+
+### Mobile
+
+```
+APK (Android)
+   ↓  HTTPS + JWT
+Render (API)
+   ↓  TLS
+Neon (PostgreSQL)
+```
+
+| Entorno | Web | API | Base de datos |
+|---|---|---|---|
+| **Local (Docker)** | nginx en `localhost:3000` | contenedor `backend` (`localhost:4100`) | PostgreSQL en contenedor (volumen `postgres_data`) |
+| **Producción** | Vercel | Render | Neon (PostgreSQL gestionado) |
+| **App móvil (APK)** | — | Render | Neon |
+
+Docker es solo para instalación y demostración **local**; **no** reemplaza la infraestructura de
+producción. Los Dockerfiles no se usan en Render (runtime Node nativo, `render.yaml`) ni en Vercel, y
+la base Docker nunca se conecta a Neon.
 
 ### App móvil con el backend de Docker
 
 La app Android **no** corre en Docker (se compila con Expo/EAS). Para probarla contra el backend
 local, en `mobile/.env` usa la IP de tu PC en la red: `EXPO_PUBLIC_API_URL=http://<IP-de-tu-PC>:4100/api`
 y ejecuta `npx expo start`. El APK publicado usa siempre la API de producción.
-
-### Local vs. producción
-
-| Entorno | Web | API | Base de datos |
-|---|---|---|---|
-| **Local (Docker)** | nginx en `localhost:8080` | contenedor `backend` (`localhost:4100`) | PostgreSQL en contenedor (volumen `postgres_data`) |
-| **Producción** | Vercel | Render | Neon (PostgreSQL gestionado) |
-| **App móvil (APK)** | — | Render | Neon |
-
-Docker es solo para instalación y demostración local; **no** reemplaza la infraestructura de
-producción. Los Dockerfiles no se usan en Render (runtime Node nativo, `render.yaml`) ni en Vercel.
 
 ## Descripción
 
@@ -177,7 +246,7 @@ flujos (auth, web, móvil, descarga): [`docs/flows.md`](docs/flows.md).
 
 ## Requisitos
 
-- **Con Docker** (recomendado para evaluar): Docker Desktop y Git. Ver [Instalación rápida con Docker](#instalación-rápida-con-docker).
+- **Con Docker** (recomendado para evaluar): Docker Desktop y Git. Ver [🚀 Instalación rápida con Docker](#-instalación-rápida-con-docker).
 - **Sin Docker** (desarrollo): Node.js ≥ 20 y npm. Sin base de datos que instalar: se usa SQLite.
 - Para probar la app en un teléfono: [Expo Go](https://expo.dev/go) (SDK 57) en la misma red Wi-Fi que el PC, o el APK.
 
@@ -345,7 +414,7 @@ Más detalle y alternativas descartadas: [`docs/architecture.md`](docs/architect
 
 **Local:** verificado contra PostgreSQL 16 (modo producción) y SQLite: esquema, restricciones, seed idempotente, persistencia tras reinicio y CORS.
 
-**Docker:** `docker compose build` + `up -d` → los tres servicios `healthy` en orden; smoke test 19/19 tanto directo (`localhost:4100/api`) como a través de nginx (`localhost:8080/api`); todas las rutas de la web responden; los datos (incluidos usuarios registrados) sobreviven a `docker compose restart` y a `down` + `up`, y el seed no duplica registros. Las imágenes no contienen `.env`, tokens ni SQLite, y el backend corre sin privilegios de root.
+**Docker:** `docker compose build` + `up -d` → los tres servicios `healthy` en orden; prueba end-to-end en Chrome real contra la web Docker (registro, logout, login, contenidos, categorías y filtro, detalle, favoritos, VOKTER AI, perfil de experto, descarga + QR y rutas protegidas tras logout) → **15/15**, sin errores 5xx ni de consola; smoke test 19/19 tanto directo (`localhost:4100/api`) como a través de nginx (`localhost:<WEB_PORT>/api`); todas las rutas de la web responden; los datos (incluidos usuarios registrados) sobreviven a `docker compose restart` y a `down` + `up`, y el seed no duplica registros. Las imágenes no contienen `.env`, tokens ni SQLite, y el backend corre sin privilegios de root.
 
 ### Capturas
 
