@@ -404,6 +404,9 @@ Más detalle y alternativas descartadas: [`docs/architecture.md`](docs/architect
 
 ## Evidencia de funcionamiento
 
+video evidencia, apk y web:
+https://youtube.com/shorts/IP43xlGtbiM?si=BtpxVXWM2HNX4s-G
+
 **Entorno público (verificado):**
 
 - API en Render sobre Neon: `npm run smoke -- https://vokter-api-2571.onrender.com/api` → **19/19**; `/api/health` → `{"status":"ok","database":"postgres"}`; CORS acepta `https://vokter-web.vercel.app` y rechaza otros orígenes.
