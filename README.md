@@ -18,7 +18,7 @@ los expertos más afines con un porcentaje de coincidencia.
 > La API usa el plan gratuito de Render: tras ~15 min sin tráfico la primera petición tarda 30-60 s.
 > Antes de una demo, abre [`/api/health`](https://vokter-api-2571.onrender.com/api/health) para despertarla.
 
-# 🚀 Instalación rápida con Docker
+#  Instalación rápida con Docker
 
 La forma más sencilla de ejecutar VØKTER en tu equipo: **web + API + PostgreSQL** con un solo comando.
 
@@ -83,7 +83,7 @@ docker compose restart
 docker compose down -v
 ```
 
-> ⚠️ **`down -v` elimina la base de datos local** (el volumen `postgres_data`): se pierden los
+>  **`down -v` elimina la base de datos local** (el volumen `postgres_data`): se pierden los
 > usuarios registrados y los favoritos. En el siguiente `up` se crea vacía y se vuelven a cargar los
 > datos demo. Úsalo solo si quieres empezar de cero.
 
