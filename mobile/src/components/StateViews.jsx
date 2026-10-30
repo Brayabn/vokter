@@ -7,7 +7,7 @@ import { colors } from '../theme';
 export function LoadingState({ message }) {
   return (
     <View style={styles.container}>
-      <ActivityIndicator color={colors.gold} />
+      <ActivityIndicator color={colors.sky} />
       {!!message && <Text style={styles.text}>{message}</Text>}
     </View>
   );
@@ -43,8 +43,8 @@ export function EmptyState({ message, actionLabel, onAction }) {
 const styles = StyleSheet.create({
   container: { alignItems: 'center', justifyContent: 'center', paddingVertical: 40, paddingHorizontal: 24, gap: 12 },
   icon: { fontSize: 28 },
-  text: { color: colors.lavender, fontSize: 14, textAlign: 'center', lineHeight: 20 },
-  button: { borderWidth: 1, borderColor: colors.gold, borderRadius: 999, paddingHorizontal: 20, paddingVertical: 10 },
-  buttonText: { color: colors.gold, fontWeight: '600' },
-  link: { color: colors.gold, fontSize: 14 },
+  text: { color: colors.steel, fontSize: 14, textAlign: 'center', lineHeight: 20 },
+  button: { borderWidth: 1, borderColor: colors.sky, borderRadius: 999, paddingHorizontal: 20, paddingVertical: 10 },
+  buttonText: { color: colors.sky, fontWeight: '600' },
+  link: { color: colors.sky, fontSize: 14 },
 });

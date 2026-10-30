@@ -44,14 +44,25 @@ async function main() {
 
   const contents = await call('GET', '/contents');
   check('GET /contents', contents.status === 200 && contents.data.contents.length >= 10,
-    `${contents.data?.contents?.length} contenidos`);
+    `${contents.data?.contents?.length} artículos`);
 
-  const search = await call('GET', '/contents?search=SEO');
-  check('GET /contents?search=SEO (sin distinguir mayúsculas)', search.status === 200 && search.data.contents.length >= 1,
+  const search = await call('GET', '/contents?search=LINO');
+  check('GET /contents?search=LINO (sin distinguir mayúsculas)', search.status === 200 && search.data.contents.length >= 1,
     `${search.data?.contents?.length} resultado(s)`);
 
   const byCategory = await call('GET', '/contents?categorySlug=tecnologia');
   check('GET /contents?categorySlug=tecnologia', byCategory.status === 200 && byCategory.data.contents.length >= 1);
+
+  // Catálogo con foto: la imagen debe servirse como JPEG y poder cargarse desde otro origen (web en Vercel).
+  const withImage = contents.data?.contents?.find((c) => c.imageUrl?.startsWith('/api/media/'));
+  if (withImage) {
+    const media = await fetch(`${BASE_URL}${withImage.imageUrl.replace(/^\/api/, '')}`);
+    check('GET /media (foto del catálogo)', media.status === 200
+      && media.headers.get('content-type')?.startsWith('image/')
+      && media.headers.get('cross-origin-resource-policy') === 'cross-origin', withImage.title);
+  } else {
+    check('GET /media (foto del catálogo)', false, 'ningún artículo tiene imageUrl /api/media/');
+  }
 
   const firstId = contents.data?.contents?.[0]?.id;
   const detail = await call('GET', `/contents/${firstId}`);
@@ -62,12 +73,12 @@ async function main() {
 
   const experts = await call('GET', '/experts');
   check('GET /experts', experts.status === 200 && experts.data.experts.length >= 10,
-    `${experts.data?.experts?.length} expertos`);
+    `${experts.data?.experts?.length} marcas`);
 
   const expertId = experts.data?.experts?.[0]?.id;
   const expert = await call('GET', `/experts/${expertId}`);
   check('GET /experts/:id', expert.status === 200 && Array.isArray(expert.data.contents),
-    `${expert.data?.expert?.name}, ${expert.data?.contents?.length} contenido(s)`);
+    `${expert.data?.expert?.name}, ${expert.data?.contents?.length} artículo(s)`);
 
   const login = await call('POST', '/auth/login', { body: { email: 'demo@vokter.com', password: 'vokter123' } });
   check('POST /auth/login (demo)', login.status === 200 && Boolean(login.data.token));
@@ -96,7 +107,7 @@ async function main() {
   const remove = await call('DELETE', `/favorites/${firstId}`, { token });
   check('DELETE /favorites/:id', remove.status === 204);
 
-  const match = await call('POST', '/ai/match', { body: { query: 'necesito ayuda con marketing y redes sociales' } });
+  const match = await call('POST', '/ai/match', { body: { query: 'busco una chaqueta impermeable para la lluvia' } });
   check('POST /ai/match (VOKTER AI)', match.status === 200 && match.data.results.length >= 1,
     match.data?.results?.map((r) => `${r.name} ${r.matchScore}%`).join(', '));
 

@@ -38,3 +38,18 @@ api.interceptors.response.use(
 );
 
 export default api;
+
+// Las fotos del catálogo se guardan como rutas del API ("/api/media/..."): se resuelven
+// contra el origen del API configurado. Las URLs https completas se usan tal cual.
+const API_ORIGIN = API_BASE_URL.replace(/\/api$/, '');
+export function mediaUrl(url) {
+  if (!url) return null;
+  if (/^https:\/\//.test(url)) return url;
+  return url.startsWith('/api/media/') ? `${API_ORIGIN}${url}` : null;
+}
+
+// Precio en pesos colombianos: 3800 -> "$3.800". null = precio a consultar.
+export function formatPrice(price) {
+  if (price === null || price === undefined) return 'Precio a consultar';
+  return `$${Number(price).toLocaleString('es-CO', { maximumFractionDigits: 0 }).replace(/,/g, '.')}`;
+}

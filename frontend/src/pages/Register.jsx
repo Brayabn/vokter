@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { ShoppingBag, Store } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { GlowCard } from '@/components/ui/spotlight-card';
+import { Reveal } from '@/components/ui/reveal';
+
+const INPUT_CLASS =
+  'rounded-xl bg-ink/80 border border-white/15 px-4 py-3 text-mist placeholder:text-steel/70 focus:border-azure/60 focus:ring-4 focus:ring-azure/10 outline-none transition';
 
 export default function Register() {
   const { register } = useAuth();
@@ -24,88 +30,118 @@ export default function Register() {
   }
 
   return (
-    <div className="max-w-md mx-auto px-6 py-20">
-      <h1 className="font-display font-bold text-3xl text-mist mb-2">Crea tu cuenta</h1>
-      <p className="text-lavender mb-8">Únete como alguien que busca conocimiento, o como experto que lo ofrece.</p>
+    <div className="relative overflow-hidden">
+      {/* Resplandor dorado decorativo de fondo */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute left-1/2 top-24 h-[520px] w-[520px] max-w-full -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(30,107,255,0.18),transparent_65%)] blur-2xl"
+      />
+      <div className="relative max-w-md mx-auto px-4 sm:px-6 py-20">
+        <Reveal className="mb-8 text-center">
+          <p className="font-mono text-xs uppercase tracking-[0.3em] text-sky mb-4">Registro</p>
+          <h1 className="font-display font-extrabold tracking-tight text-4xl sm:text-5xl text-mist mb-3">
+            Crea tu <span className="text-gradient-azure">cuenta</span>
+          </h1>
+          <p className="text-steel text-lg">
+            Entra como comprador, o como marca que quiere vender en VØKTER.
+          </p>
+        </Reveal>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <div className="flex gap-3">
-          {[
-            { value: 'user', label: 'Busco conocimiento' },
-            { value: 'expert', label: 'Ofrezco conocimiento' },
-          ].map((opt) => (
-            <button
-              type="button"
-              key={opt.value}
-              onClick={() => setForm({ ...form, role: opt.value })}
-              className={`flex-1 rounded-xl border px-4 py-3 text-sm transition-colors ${
-                form.role === opt.value
-                  ? 'border-gold bg-gold/10 text-gold'
-                  : 'border-white/10 text-lavender hover:border-white/20'
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
+        <GlowCard customSize className="w-full p-6 sm:p-8">
+          <div className="relative">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <div className="flex gap-3">
+                {[
+                  { value: 'user', label: 'Quiero comprar', Icon: ShoppingBag },
+                  { value: 'expert', label: 'Quiero vender', Icon: Store },
+                ].map((opt) => (
+                  <button
+                    type="button"
+                    key={opt.value}
+                    aria-pressed={form.role === opt.value}
+                    onClick={() => setForm({ ...form, role: opt.value })}
+                    className={`flex-1 flex flex-col items-center gap-1.5 rounded-xl border px-3 py-3 text-sm transition-colors ${
+                      form.role === opt.value
+                        ? 'border-azure bg-azure/10 text-sky'
+                        : 'border-white/15 text-steel hover:border-white/30'
+                    }`}
+                  >
+                    <opt.Icon aria-hidden="true" className="h-4 w-4" />
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
 
-        <input
-          required
-          placeholder="Nombre completo"
-          value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-          className="rounded-xl bg-surface border border-white/10 px-4 py-3 text-mist placeholder:text-lavender/60 focus:border-gold/50 outline-none"
-        />
-        <input
-          type="email"
-          required
-          placeholder="Correo electrónico"
-          value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-          className="rounded-xl bg-surface border border-white/10 px-4 py-3 text-mist placeholder:text-lavender/60 focus:border-gold/50 outline-none"
-        />
-        <input
-          type="password"
-          required
-          placeholder="Contraseña"
-          value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
-          className="rounded-xl bg-surface border border-white/10 px-4 py-3 text-mist placeholder:text-lavender/60 focus:border-gold/50 outline-none"
-        />
+              <label htmlFor="reg-name" className="sr-only">Nombre completo</label>
+              <input
+                id="reg-name"
+                required
+                placeholder="Nombre completo"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                className={INPUT_CLASS}
+              />
+              <label htmlFor="reg-email" className="sr-only">Correo electrónico</label>
+              <input
+                id="reg-email"
+                type="email"
+                required
+                placeholder="Correo electrónico"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                className={INPUT_CLASS}
+              />
+              <label htmlFor="reg-password" className="sr-only">Contraseña</label>
+              <input
+                id="reg-password"
+                type="password"
+                required
+                placeholder="Contraseña"
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                className={INPUT_CLASS}
+              />
 
-        {form.role === 'expert' && (
-          <>
-            <textarea
-              placeholder="Cuéntanos brevemente tu experiencia"
-              value={form.bio}
-              onChange={(e) => setForm({ ...form, bio: e.target.value })}
-              rows={3}
-              className="rounded-xl bg-surface border border-white/10 px-4 py-3 text-mist placeholder:text-lavender/60 focus:border-gold/50 outline-none resize-none"
-            />
-            <input
-              placeholder="Habilidades separadas por coma (ej: marketing, redes sociales)"
-              value={form.skills}
-              onChange={(e) => setForm({ ...form, skills: e.target.value })}
-              className="rounded-xl bg-surface border border-white/10 px-4 py-3 text-mist placeholder:text-lavender/60 focus:border-gold/50 outline-none"
-            />
-          </>
-        )}
+              {form.role === 'expert' && (
+                <>
+                  <label htmlFor="reg-bio" className="sr-only">Sobre tu marca</label>
+                  <textarea
+                    id="reg-bio"
+                    placeholder="Cuéntanos brevemente qué vende tu marca"
+                    value={form.bio}
+                    onChange={(e) => setForm({ ...form, bio: e.target.value })}
+                    rows={3}
+                    className={`${INPUT_CLASS} resize-none`}
+                  />
+                  <label htmlFor="reg-skills" className="sr-only">Líneas de producto</label>
+                  <input
+                    id="reg-skills"
+                    placeholder="Líneas de producto separadas por coma (ej: chaquetas, impermeable)"
+                    value={form.skills}
+                    onChange={(e) => setForm({ ...form, skills: e.target.value })}
+                    className={INPUT_CLASS}
+                  />
+                </>
+              )}
 
-        {error && <p className="text-sm text-red-400">{error}</p>}
+              {error && <p className="text-sm text-danger">{error}</p>}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-full bg-gold text-ink font-semibold px-6 py-3 mt-2 hover:bg-goldSoft transition-colors disabled:opacity-60"
-        >
-          {loading ? 'Creando cuenta...' : 'Crear cuenta'}
-        </button>
-      </form>
+              <button
+                type="submit"
+                disabled={loading}
+                className="rounded-full bg-azure text-mist font-semibold px-6 py-3 mt-2 shadow-[0_0_30px_-10px_rgba(30,107,255,0.8)] hover:bg-azureDeep transition-colors disabled:opacity-60"
+              >
+                {loading ? 'Creando cuenta...' : 'Crear cuenta'}
+              </button>
+            </form>
 
-      <p className="text-sm text-lavender mt-6">
-        ¿Ya tienes cuenta?{' '}
-        <Link to="/login" className="text-gold hover:text-goldSoft">Ingresa aquí</Link>
-      </p>
+            <p className="text-sm text-steel mt-6 text-center">
+              ¿Ya tienes cuenta?{' '}
+              <Link to="/login" className="text-sky hover:text-skySoft">Ingresa aquí</Link>
+            </p>
+          </div>
+        </GlowCard>
+      </div>
     </div>
   );
 }

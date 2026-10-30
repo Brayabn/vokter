@@ -4,7 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import api from '../api/client';
 import { useApiRequest } from '../hooks/useApiRequest';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
-import { colors } from '../theme';
+import Aurora from '../components/Aurora';
+import { colors, hairline, radius, TAB_BAR_SPACE } from '../theme';
 import ContentCard from '../components/ContentCard';
 import FadeInView from '../components/FadeInView';
 import { LoadingState, ErrorState, EmptyState } from '../components/StateViews';
@@ -34,17 +35,19 @@ export default function ExploreScreen({ navigation, route }) {
   }, [debouncedSearch, activeCategory]);
 
   const emptyMessage = debouncedSearch
-    ? `No encontramos resultados para "${debouncedSearch}".`
-    : 'No hay contenidos en esta categoría todavía.';
+    ? `No encontramos artículos para "${debouncedSearch}".`
+    : 'Todavía no hay artículos en esta categoría.';
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      <Aurora />
       <View style={styles.header}>
-        <Text style={styles.title}>Explorar</Text>
+        <Text style={styles.eyebrow}>CATÁLOGO</Text>
+        <Text style={styles.title}>Todos los artículos</Text>
         <TextInput
           style={styles.search}
-          placeholder="Buscar por tema o habilidad..."
-          placeholderTextColor={colors.lavender}
+          placeholder="Buscar una chaqueta, audífonos, una silla..."
+          placeholderTextColor={colors.steel}
           value={search}
           onChangeText={setSearch}
           returnKeyType="search"
@@ -93,17 +96,18 @@ export default function ExploreScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.ink },
   header: { paddingHorizontal: 20, paddingTop: 16 },
-  title: { color: colors.mist, fontSize: 24, fontWeight: '800', marginBottom: 16 },
+  eyebrow: { color: colors.sky, fontSize: 10, letterSpacing: 3, fontWeight: '700', marginBottom: 6 },
+  title: { color: colors.mist, fontSize: 26, fontWeight: '800', marginBottom: 16 },
   search: {
-    backgroundColor: colors.surface, borderRadius: 999, paddingHorizontal: 16, paddingVertical: 12,
-    color: colors.mist, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: colors.surface, borderRadius: radius.pill, paddingHorizontal: 16, paddingVertical: 12,
+    color: colors.mist, borderWidth: 1, borderColor: hairline,
   },
   chip: {
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', borderRadius: 999,
+    borderWidth: 1, borderColor: hairline, borderRadius: radius.pill,
     paddingHorizontal: 14, paddingVertical: 8, marginRight: 8,
   },
-  chipActive: { borderColor: colors.gold, backgroundColor: 'rgba(232,176,75,0.1)' },
-  chipText: { color: colors.lavender, fontSize: 13 },
-  chipTextActive: { color: colors.gold },
-  list: { padding: 20, paddingTop: 16 },
+  chipActive: { borderColor: colors.sky, backgroundColor: 'rgba(111,211,255,0.12)' },
+  chipText: { color: colors.steel, fontSize: 13 },
+  chipTextActive: { color: colors.sky },
+  list: { padding: 20, paddingTop: 16, paddingBottom: TAB_BAR_SPACE },
 });

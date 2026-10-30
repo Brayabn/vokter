@@ -3,7 +3,9 @@ import { useSearchParams } from 'react-router-dom';
 import api from '../api/client';
 import { useApiRequest } from '../hooks/useApiRequest';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
+import { Search } from 'lucide-react';
 import ContentCard from '../components/ContentCard';
+import { Reveal } from '@/components/ui/reveal';
 import { LoadingState, ErrorState, EmptyState } from '../components/StateViews';
 
 export default function Explore() {
@@ -40,16 +42,27 @@ export default function Explore() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-12">
-      <h1 className="font-display font-bold text-3xl text-mist mb-8">Explorar</h1>
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16">
+      <Reveal className="mb-10">
+        <p className="font-mono text-xs uppercase tracking-[0.3em] text-sky">Catálogo</p>
+        <h1 className="mt-4 font-display font-extrabold tracking-tight text-4xl sm:text-5xl text-mist">
+          Todos los <span className="text-gradient-azure">artículos</span>
+        </h1>
+        <p className="mt-4 max-w-2xl text-steel text-lg">
+          Ropa, tecnología, calzado, accesorios, hogar y deporte de las diez marcas de la tienda.
+        </p>
+      </Reveal>
 
       <form onSubmit={handleSearch} className="mb-6">
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Buscar por tema, habilidad o palabra clave..."
-          className="w-full rounded-full bg-surface border border-white/10 px-5 py-3.5 text-mist placeholder:text-lavender/60 focus:border-gold/50 outline-none"
-        />
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-steel/70" aria-hidden="true" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar una chaqueta, audífonos, una silla..."
+            className="w-full rounded-full bg-ink/80 border border-white/15 pl-12 pr-5 py-3.5 text-mist placeholder:text-steel/70 focus:border-azure/60 focus:ring-4 focus:ring-azure/10 outline-none transition"
+          />
+        </div>
       </form>
 
       <div className="flex flex-wrap gap-2 mb-10">
@@ -59,8 +72,8 @@ export default function Explore() {
             onClick={() => toggleCategory(cat.slug)}
             className={`text-sm rounded-full px-4 py-2 border transition-colors ${
               activeCategory === cat.slug
-                ? 'border-gold bg-gold/10 text-gold'
-                : 'border-white/10 text-lavender hover:border-white/20'
+                ? 'border-azure bg-azure/15 text-sky'
+                : 'border-white/10 text-steel hover:border-white/25 hover:text-mist'
             }`}
           >
             {cat.icon} {cat.name}
@@ -75,13 +88,13 @@ export default function Explore() {
       ) : contents.length === 0 ? (
         <EmptyState
           message={debouncedSearch
-            ? `No encontramos resultados para "${debouncedSearch}". Prueba con otra búsqueda o categoría.`
-            : 'No hay contenidos en esta categoría todavía.'}
+            ? `No encontramos artículos para "${debouncedSearch}". Prueba con otra búsqueda o categoría.`
+            : 'Todavía no hay artículos en esta categoría.'}
         />
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <Reveal className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5" deps={[contents]}>
           {contents.map((c) => <ContentCard key={c.id} content={c} />)}
-        </div>
+        </Reveal>
       )}
     </div>
   );

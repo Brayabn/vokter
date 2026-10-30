@@ -4,6 +4,13 @@ const { User } = require('../models');
 const { config } = require('../config/env');
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// bcrypt solo usa los primeros 72 bytes: más largo se rechaza en vez de truncarse en silencio.
+const MAX_PASSWORD = 72;
+// Hash ficticio: el login compara contra él cuando el correo no existe, para que
+// el tiempo de respuesta no revele qué correos están registrados.
+const DUMMY_HASH = bcrypt.hashSync('vokter-dummy-password', 10);
+
+const isText = (value, max) => typeof value === 'string' && value.trim().length > 0 && value.length <= max;
 
 function signToken(user) {
   return jwt.sign(
@@ -22,14 +29,18 @@ exports.register = async (req, res) => {
   try {
     const { name, email, password, role, bio, skills } = req.body;
 
-    if (!name || !email || !password) {
+    if (!isText(name, 100) || !isText(email, 254) || typeof password !== 'string' || !password) {
       return res.status(400).json({ error: 'name, email y password son obligatorios.' });
+    }
+    if ((bio !== undefined && (typeof bio !== 'string' || bio.length > 1000))
+      || (skills !== undefined && (typeof skills !== 'string' || skills.length > 500))) {
+      return res.status(400).json({ error: 'bio o skills no son válidos o son demasiado largos.' });
     }
     if (!EMAIL_REGEX.test(email)) {
       return res.status(400).json({ error: 'El correo electrónico no tiene un formato válido.' });
     }
-    if (password.length < 6) {
-      return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres.' });
+    if (password.length < 6 || Buffer.byteLength(password) > MAX_PASSWORD) {
+      return res.status(400).json({ error: `La contraseña debe tener entre 6 y ${MAX_PASSWORD} caracteres.` });
     }
 
     const existing = await User.findOne({ where: { email: email.toLowerCase().trim() } });
@@ -59,17 +70,13 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password) {
+    if (!isText(email, 254) || typeof password !== 'string' || !password || password.length > 200) {
       return res.status(400).json({ error: 'email y password son obligatorios.' });
     }
 
     const user = await User.findOne({ where: { email: email.toLowerCase().trim() } });
-    if (!user) {
-      return res.status(401).json({ error: 'Credenciales inválidas.' });
-    }
-
-    const valid = await bcrypt.compare(password, user.passwordHash);
-    if (!valid) {
+    const valid = await bcrypt.compare(password, user ? user.passwordHash : DUMMY_HASH);
+    if (!user || !valid) {
       return res.status(401).json({ error: 'Credenciales inválidas.' });
     }
 

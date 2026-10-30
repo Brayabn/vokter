@@ -2,14 +2,14 @@ import { useEffect, useRef } from 'react';
 
 const NODE_COUNT = 42;
 const CONNECT_DISTANCE = 140;
-const GOLD = 'rgba(232, 176, 75,';
-const LAVENDER = 'rgba(168, 174, 196,';
+const AZURE = 'rgba(111, 211, 255,';   // azul claro: nodos destacados
+const STEEL = 'rgba(140, 163, 194,';   // azul grisáceo: nodos y líneas de base
 
 /**
  * Fondo ambiental de baja intensidad: nodos que se mueven lentamente y se
- * conectan cuando están cerca, evocando "red de conocimiento" sin costar
- * la complejidad de un motor 3D real. Se detiene si el usuario prefiere
- * menos movimiento (prefers-reduced-motion).
+ * conectan cuando están cerca, como una constelación detrás del catálogo.
+ * Da profundidad a todas las pantallas sin el coste de un motor 3D real.
+ * Se detiene si el usuario prefiere menos movimiento (prefers-reduced-motion).
  */
 export default function AmbientBackground() {
   const canvasRef = useRef(null);
@@ -32,7 +32,7 @@ export default function AmbientBackground() {
         y: Math.random() * height,
         vx: (Math.random() - 0.5) * 0.15 * devicePixelRatio,
         vy: (Math.random() - 0.5) * 0.15 * devicePixelRatio,
-        gold: Math.random() > 0.75,
+        azure: Math.random() > 0.75,
       }));
     }
 
@@ -53,7 +53,7 @@ export default function AmbientBackground() {
           const maxDist = CONNECT_DISTANCE * devicePixelRatio;
           if (dist < maxDist) {
             const opacity = (1 - dist / maxDist) * 0.15;
-            ctx.strokeStyle = `${LAVENDER}${opacity})`;
+            ctx.strokeStyle = `${STEEL}${opacity})`;
             ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(a.x, a.y);
@@ -64,9 +64,9 @@ export default function AmbientBackground() {
       }
 
       for (const n of nodes) {
-        ctx.fillStyle = `${n.gold ? GOLD : LAVENDER}${n.gold ? 0.5 : 0.35})`;
+        ctx.fillStyle = `${n.azure ? AZURE : STEEL}${n.azure ? 0.5 : 0.35})`;
         ctx.beginPath();
-        ctx.arc(n.x, n.y, n.gold ? 2 : 1.4, 0, Math.PI * 2);
+        ctx.arc(n.x, n.y, n.azure ? 2 : 1.4, 0, Math.PI * 2);
         ctx.fill();
       }
 

@@ -1,7 +1,14 @@
 const bcrypt = require('bcryptjs');
 const { config } = require('../config/env');
 const { sequelize, User, Category, Content } = require('../models');
-const { DEMO_PASSWORD, CATEGORIES, EXPERTS, DEMO_USER, CONTENTS } = require('./seedData');
+const { ensureSchema } = require('./schema');
+const seedData = require('./seedData');
+const catalog = require('./catalogData');
+
+const { DEMO_PASSWORD, DEMO_USER } = seedData;
+const CATEGORIES = [...seedData.CATEGORIES, ...catalog.CATALOG_CATEGORIES];
+const EXPERTS = [...seedData.EXPERTS, ...catalog.CATALOG_EXPERTS];
+const CONTENTS = [...seedData.CONTENTS, ...catalog.CATALOG_CONTENTS];
 
 /**
  * Siembra los datos demo de forma IDEMPOTENTE: usa findOrCreate con claves
@@ -54,10 +61,11 @@ async function runCli() {
 
   await sequelize.authenticate();
   await sequelize.sync(reset ? { force: true } : {});
+  await ensureSchema();
   const counts = await seedDemoData();
 
   console.log(`✅ Seed completado (${sequelize.getDialect()}${reset ? ', tablas recreadas' : ''}). Nuevos registros:`, counts);
-  console.log(`   Usuarios demo (password: ${DEMO_PASSWORD}): demo@vokter.com y 10 expertos @vokter.com`);
+  console.log(`   Usuarios demo (password: ${DEMO_PASSWORD}): demo@vokter.com y ${EXPERTS.length} marcas @vokter.com`);
   await sequelize.close();
 }
 

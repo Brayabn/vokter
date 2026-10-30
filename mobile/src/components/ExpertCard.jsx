@@ -1,12 +1,14 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { colors } from '../theme';
+import { View, Text, StyleSheet } from 'react-native';
+import { colors, hairline, radius } from '../theme';
 import Avatar from './Avatar';
+import PressableCard from './PressableCard';
 
+// Tarjeta de marca de la tienda. `skills` son sus líneas de producto.
 export default function ExpertCard({ expert, onPress }) {
-  const skillsList = (expert.skills || '').split(',').map((s) => s.trim()).filter(Boolean).slice(0, 3);
+  const lines = (expert.skills || '').split(',').map((s) => s.trim()).filter(Boolean).slice(0, 3);
 
   return (
-    <TouchableOpacity style={styles.card} activeOpacity={0.85} onPress={onPress} disabled={!onPress}>
+    <PressableCard style={styles.card} onPress={onPress}>
       <View style={styles.header}>
         <Avatar name={expert.name} />
         <View style={{ flex: 1 }}>
@@ -17,31 +19,31 @@ export default function ExpertCard({ expert, onPress }) {
 
       <Text style={styles.bio} numberOfLines={2}>{expert.bio}</Text>
 
-      <View style={styles.skillsRow}>
-        {skillsList.map((s) => (
-          <View key={s} style={styles.skillChip}>
-            <Text style={styles.skillText}>{s}</Text>
+      <View style={styles.linesRow}>
+        {lines.map((s) => (
+          <View key={s} style={styles.lineChip}>
+            <Text style={styles.lineText}>{s}</Text>
           </View>
         ))}
       </View>
-    </TouchableOpacity>
+    </PressableCard>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
-    borderRadius: 18,
+    borderRadius: radius.lg,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    borderColor: hairline,
   },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 10 },
   name: { color: colors.mist, fontSize: 15, fontWeight: '700' },
-  rating: { color: colors.success, fontSize: 12, marginTop: 2 },
-  bio: { color: colors.lavender, fontSize: 13, marginBottom: 10, lineHeight: 18 },
-  skillsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  skillChip: { backgroundColor: colors.surface2, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
-  skillText: { color: colors.lavender, fontSize: 11 },
+  rating: { color: colors.sky, fontSize: 12, marginTop: 2 },
+  bio: { color: colors.steel, fontSize: 13, marginBottom: 10, lineHeight: 19 },
+  linesRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  lineChip: { backgroundColor: colors.surface2, borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 4 },
+  lineText: { color: colors.steel, fontSize: 11 },
 });

@@ -5,8 +5,8 @@ const { matchExperts } = require('../utils/matchEngine');
 exports.match = async (req, res) => {
   try {
     const { query } = req.body;
-    if (!query || query.trim().length < 3) {
-      return res.status(400).json({ error: 'Escribe una consulta más específica.' });
+    if (typeof query !== 'string' || query.trim().length < 3 || query.length > 500) {
+      return res.status(400).json({ error: 'Describe con un poco más de detalle lo que buscas.' });
     }
 
     const experts = await User.findAll({
@@ -29,6 +29,6 @@ exports.match = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: 'Error al procesar la consulta con VOKTER AI.' });
+    return res.status(500).json({ error: 'Error al procesar tu búsqueda con VOKTER AI.' });
   }
 };

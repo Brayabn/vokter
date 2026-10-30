@@ -50,7 +50,7 @@ backend/src/
 ├── config/     env.js (lee y valida variables) · db.js (PostgreSQL o SQLite)
 ├── models/     User, Category, Content, Favorite + relaciones
 ├── middleware/ auth.js (requireAuth, requireRole)
-├── controllers/ auth, content (contenidos, categorías, expertos), favorite, ai
+├── controllers/ auth, content (artículos, categorías, marcas), favorite, ai
 ├── routes/     un router por recurso, montados en /api/*
 ├── utils/      matchEngine (VOKTER AI), seed + seedData, params
 └── server.js   middlewares globales, health check, arranque
@@ -115,7 +115,7 @@ erDiagram
 - `JWT_SECRET` obligatorio en producción (≥ 32 caracteres): el servidor **no arranca** sin él. En Render lo genera la plataforma (`generateValue`), nunca pasa por el repositorio.
 - CORS por lista blanca (`CORS_ORIGIN`). Si está vacía en producción se rechazan todos los navegadores (seguro por defecto); la app nativa no usa CORS.
 - `helmet`, límite de 100 kB en el body, rate limit en login/registro, `trust proxy` para ver la IP real detrás de Render.
-- Autorización por rol (`requireRole('expert')`) para crear contenidos.
+- Autorización por rol (`requireRole('expert')`, el rol de las marcas) para crear artículos.
 - Conexión a Neon con TLS verificado.
 - Errores centralizados: el cliente nunca recibe stack traces.
 - `.env`, SQLite local, keystores y APKs están en `.gitignore`.

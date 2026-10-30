@@ -1,42 +1,51 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { colors } from '../theme';
+import { View, Text, StyleSheet } from 'react-native';
+import { colors, hairline, radius } from '../theme';
+import PressableCard from './PressableCard';
 
+// Resultado de VOKTER AI: la marca de la tienda que mejor encaja con la consulta.
 export default function MatchCard({ match, onPress }) {
+  const score = Math.max(0, Math.min(match.matchScore, 100));
+
   return (
-    <View style={styles.card}>
+    <PressableCard style={styles.card} onPress={onPress}>
       <View style={styles.row}>
-        <Text style={styles.name}>{match.name}</Text>
+        <Text style={styles.name} numberOfLines={1}>{match.name}</Text>
         <View style={styles.badge}>
           <Text style={styles.badgeText}>{match.matchScore}% match</Text>
         </View>
       </View>
+
+      {/* Barra del porcentaje de coincidencia: el dato que diferencia a VOKTER AI */}
+      <View style={styles.track}>
+        <View style={[styles.fill, { width: `${score}%` }]} />
+      </View>
+
       <Text style={styles.bio} numberOfLines={2}>{match.bio}</Text>
       <View style={styles.footer}>
         <Text style={styles.rating}>★ {match.rating?.toFixed(1)}</Text>
-        <TouchableOpacity style={styles.button} onPress={onPress}>
-          <Text style={styles.buttonText}>Ver perfil</Text>
-        </TouchableOpacity>
+        <Text style={styles.link}>Ver la marca →</Text>
       </View>
-    </View>
+    </PressableCard>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
-    borderRadius: 16,
+    borderRadius: radius.lg,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    borderColor: hairline,
   },
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, gap: 8 },
   name: { color: colors.mist, fontSize: 15, fontWeight: '700', flexShrink: 1 },
-  badge: { backgroundColor: 'rgba(232,176,75,0.12)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999 },
-  badgeText: { color: colors.gold, fontSize: 11, fontWeight: '600' },
-  bio: { color: colors.lavender, fontSize: 13, marginBottom: 10 },
+  badge: { backgroundColor: 'rgba(111,211,255,0.14)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: radius.pill },
+  badgeText: { color: colors.sky, fontSize: 11, fontWeight: '600' },
+  track: { height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.08)', marginBottom: 10, overflow: 'hidden' },
+  fill: { height: 4, borderRadius: 2, backgroundColor: colors.sky },
+  bio: { color: colors.steel, fontSize: 13, lineHeight: 19, marginBottom: 12 },
   footer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  rating: { color: colors.success, fontSize: 12 },
-  button: { borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 },
-  buttonText: { color: colors.mist, fontSize: 12 },
+  rating: { color: colors.sky, fontSize: 12 },
+  link: { color: colors.mist, fontSize: 12, fontWeight: '600' },
 });

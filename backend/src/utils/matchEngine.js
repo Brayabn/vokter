@@ -2,8 +2,10 @@
  * VOKTER AI — motor de matching basado en reglas + similitud de palabras clave.
  *
  * No usa un LLM externo (no es necesario para demostrar el concepto): interpreta
- * la consulta del usuario, la relaciona con categorías conocidas y calcula un
- * porcentaje de afinidad contra los tags/skills de expertos y contenidos.
+ * la consulta del comprador ("busco una chaqueta para la lluvia") y calcula un
+ * porcentaje de afinidad contra las líneas de producto (skills) y el relato
+ * (bio) de cada marca de la tienda. En el modelo de datos las marcas son Users
+ * con role 'expert', de ahí el nombre `matchExperts`.
  *
  * Es intencionalmente simple y transparente para poder explicarlo en la
  * sustentación técnica, pero es fácilmente reemplazable por una llamada a un
@@ -15,6 +17,12 @@ const STOPWORDS = new Set([
   'de', 'la', 'el', 'en', 'y', 'a', 'un', 'una', 'para', 'con', 'que', 'mi',
   'me', 'necesito', 'busco', 'quiero', 'ayuda', 'ayudarme', 'algo', 'como',
   'los', 'las', 'del', 'al', 'es', 'su', 'sus', 'por', 'sobre',
+  // Relleno típico de una consulta de compra ("¿dónde puedo comprar unos...?").
+  // Sin esto diluirían el porcentaje: aparecen en casi toda consulta y no
+  // describen el artículo que se busca.
+  'comprar', 'compro', 'quisiera', 'estoy', 'buscando', 'donde', 'puedo',
+  'tienen', 'tienda', 'hay', 'unos', 'unas', 'algun', 'alguna', 'recomienda',
+  'recomiendame', 'recomiendan', 'bueno', 'buena', 'barato', 'barata',
 ]);
 
 function normalize(text) {

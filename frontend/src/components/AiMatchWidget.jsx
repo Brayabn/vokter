@@ -1,13 +1,16 @@
-import { useEffect, useRef, useState } from 'react';
-import anime from 'animejs';
+import { useRef, useState } from 'react';
+import { gsap } from 'gsap';
+import { ArrowRight } from 'lucide-react';
 import api from '../api/client';
 import { getErrorMessage } from '../api/errors';
 import MatchCard from './MatchCard';
+import { useMotion } from '@/hooks/useMotion';
 
 const EXAMPLES = [
-  'necesito ayuda con marketing y redes sociales para mi negocio',
-  'quiero desarrollar una app web y móvil',
-  'busco rediseñar la interfaz de mi producto',
+  'busco una chaqueta impermeable para la lluvia',
+  'quiero unos audífonos con cancelación de ruido',
+  'necesito zapatillas para correr en asfalto',
+  'un reloj minimalista de acero para regalar',
 ];
 
 export default function AiMatchWidget({ variant = 'default' }) {
@@ -17,30 +20,24 @@ export default function AiMatchWidget({ variant = 'default' }) {
   const [error, setError] = useState('');
   const resultsRef = useRef(null);
 
-  useEffect(() => {
-    if (!results || !resultsRef.current) return;
-    const cards = resultsRef.current.querySelectorAll('.result-card');
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      // Sin animación, pero visibles (las tarjetas arrancan con opacity-0).
-      cards.forEach((el) => { el.style.opacity = '1'; });
-      return;
-    }
-
-    anime({
-      targets: cards,
-      opacity: [0, 1],
-      translateY: [16, 0],
-      scale: [0.96, 1],
-      delay: anime.stagger(80),
-      duration: 500,
-      easing: 'easeOutCubic',
+  // Las tarjetas son visibles por defecto; la entrada escalonada solo ocurre sin reduced-motion.
+  useMotion(resultsRef, () => {
+    if (!results) return;
+    gsap.from(resultsRef.current.querySelectorAll('.result-card'), {
+      opacity: 0,
+      y: 16,
+      scale: 0.96,
+      duration: 0.5,
+      ease: 'power3.out',
+      stagger: 0.08,
+      clearProps: 'transform,opacity',
     });
   }, [results]);
 
   async function handleSubmit(e) {
     e.preventDefault();
     if (query.trim().length < 3) {
-      setError('Cuéntanos un poco más sobre lo que necesitas.');
+      setError('Cuéntanos un poco más sobre el artículo que buscas.');
       return;
     }
     setError('');
@@ -49,27 +46,29 @@ export default function AiMatchWidget({ variant = 'default' }) {
       const res = await api.post('/ai/match', { query });
       setResults(res.data.results);
     } catch (err) {
-      setError(getErrorMessage(err, 'No pudimos procesar tu consulta. Intenta de nuevo.'));
+      setError(getErrorMessage(err, 'No pudimos procesar tu búsqueda. Intenta de nuevo.'));
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className={variant === 'hero' ? '' : 'rounded-3xl bg-surface border border-white/5 p-6 sm:p-8'}>
+    <div className={variant === 'hero' ? '' : 'rounded-3xl bg-surface border border-white/10 p-6 sm:p-8'}>
       <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="¿Qué estás buscando?"
-          className="flex-1 rounded-full bg-surface2 border border-white/10 px-5 py-3.5 text-mist placeholder:text-lavender/60 focus:border-gold/50 outline-none transition-colors"
+          placeholder="¿Qué artículo estás buscando?"
+          aria-label="Describe el artículo que buscas"
+          className="flex-1 rounded-full bg-ink/80 border border-white/15 px-6 py-4 text-mist placeholder:text-steel/70 focus:border-azure/60 focus:ring-4 focus:ring-azure/10 outline-none transition-all"
         />
         <button
           type="submit"
           disabled={loading}
-          className="rounded-full bg-gold text-ink font-semibold px-6 py-3.5 hover:bg-goldSoft active:scale-95 transition-all disabled:opacity-60"
+          className="group inline-flex items-center justify-center gap-2 rounded-full bg-azure text-mist font-semibold px-7 py-4 shadow-[0_0_30px_-10px_rgba(30,107,255,0.8)] hover:bg-azureDeep active:scale-95 transition-all disabled:opacity-60"
         >
           {loading ? 'Interpretando...' : 'Buscar'}
+          {!loading && <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />}
         </button>
       </form>
 
@@ -78,8 +77,9 @@ export default function AiMatchWidget({ variant = 'default' }) {
           {EXAMPLES.map((ex) => (
             <button
               key={ex}
+              type="button"
               onClick={() => setQuery(ex)}
-              className="text-xs font-mono text-lavender border border-white/10 rounded-full px-3 py-1.5 hover:border-gold/40 hover:text-mist transition-colors"
+              className="text-xs font-mono text-steel border border-white/15 bg-white/[0.03] rounded-full px-3 py-1.5 hover:border-azure/50 hover:text-mist transition-colors"
             >
               {ex}
             </button>
@@ -87,18 +87,18 @@ export default function AiMatchWidget({ variant = 'default' }) {
         </div>
       )}
 
-      {error && <p className="text-sm text-red-400 mt-3">{error}</p>}
+      {error && <p className="text-sm text-danger mt-3">{error}</p>}
 
       {results && (
         <div className="mt-6" ref={resultsRef}>
-          <p className="text-xs font-mono text-lavender mb-3">
+          <p className="text-xs font-mono text-steel mb-3">
             {results.length > 0
-              ? `Encontramos ${results.length} coincidencia${results.length > 1 ? 's' : ''} para ti`
-              : 'No encontramos coincidencias todavía. Prueba con otras palabras.'}
+              ? `${results.length} marca${results.length > 1 ? 's' : ''} de la tienda encaja${results.length > 1 ? 'n' : ''} con lo que buscas`
+              : 'No encontramos nada con esas palabras. Prueba describiendo el artículo de otra forma.'}
           </p>
           <div className="grid sm:grid-cols-3 gap-4">
             {results.map((m) => (
-              <div key={m.id} className="result-card opacity-0">
+              <div key={m.id} className="result-card">
                 <MatchCard match={m} />
               </div>
             ))}

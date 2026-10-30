@@ -3,13 +3,14 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator,
 import { useNavigation } from '@react-navigation/native';
 import api from '../api/client';
 import { getErrorMessage } from '../api/errors';
-import { colors } from '../theme';
+import { colors, glow, hairline, radius } from '../theme';
 import MatchCard from './MatchCard';
 
 const EXAMPLES = [
-  'necesito ayuda con marketing y redes sociales',
-  'quiero desarrollar una app web y móvil',
-  'busco rediseñar la interfaz de mi producto',
+  'busco una chaqueta impermeable para la lluvia',
+  'quiero unos audífonos con cancelación de ruido',
+  'necesito zapatillas para correr en asfalto',
+  'un reloj minimalista de acero para regalar',
 ];
 
 export default function AiMatchWidget() {
@@ -22,7 +23,7 @@ export default function AiMatchWidget() {
   async function handleSearch(text) {
     const q = text ?? query;
     if (q.trim().length < 3) {
-      setError('Cuéntanos un poco más sobre lo que necesitas.');
+      setError('Cuéntanos un poco más sobre el artículo que buscas.');
       return;
     }
     setError('');
@@ -31,7 +32,7 @@ export default function AiMatchWidget() {
       const res = await api.post('/ai/match', { query: q });
       setResults(res.data.results);
     } catch (err) {
-      setError(getErrorMessage(err, 'No pudimos procesar tu consulta. Intenta de nuevo.'));
+      setError(getErrorMessage(err, 'No pudimos procesar tu búsqueda. Intenta de nuevo.'));
     } finally {
       setLoading(false);
     }
@@ -39,18 +40,23 @@ export default function AiMatchWidget() {
 
   return (
     <View style={styles.card}>
+      <View style={styles.labelRow}>
+        <View style={styles.dot} />
+        <Text style={styles.label}>VOKTER AI</Text>
+      </View>
+
       <View style={styles.inputRow}>
         <TextInput
           style={styles.input}
-          placeholder="¿Qué estás buscando?"
-          placeholderTextColor={colors.lavender}
+          placeholder="¿Qué artículo estás buscando?"
+          placeholderTextColor={colors.steel}
           value={query}
           onChangeText={setQuery}
           onSubmitEditing={() => handleSearch()}
           returnKeyType="search"
         />
-        <TouchableOpacity style={styles.button} onPress={() => handleSearch()} disabled={loading}>
-          {loading ? <ActivityIndicator color={colors.ink} /> : <Text style={styles.buttonText}>Buscar</Text>}
+        <TouchableOpacity style={styles.button} onPress={() => handleSearch()} disabled={loading} activeOpacity={0.85}>
+          {loading ? <ActivityIndicator color={colors.mist} /> : <Text style={styles.buttonText}>Buscar</Text>}
         </TouchableOpacity>
       </View>
 
@@ -74,8 +80,8 @@ export default function AiMatchWidget() {
         <View style={{ marginTop: 16 }}>
           <Text style={styles.resultsLabel}>
             {results.length > 0
-              ? `Encontramos ${results.length} coincidencia${results.length > 1 ? 's' : ''}`
-              : 'No encontramos coincidencias todavía.'}
+              ? `${results.length} marca${results.length > 1 ? 's' : ''} encaja${results.length > 1 ? 'n' : ''} con lo que buscas`
+              : 'No encontramos nada con esas palabras. Pruébalo de otra forma.'}
           </Text>
           {results.map((m) => (
             <MatchCard key={m.id} match={m} onPress={() => navigation.navigate('ExpertProfile', { expert: m })} />
@@ -87,25 +93,36 @@ export default function AiMatchWidget() {
 }
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: colors.surface, borderRadius: 20, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: hairline,
+    ...glow,
+  },
+  labelRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
+  dot: { width: 7, height: 7, borderRadius: 4, backgroundColor: colors.sky },
+  label: { color: colors.sky, fontSize: 10, fontWeight: '700', letterSpacing: 2 },
   inputRow: { flexDirection: 'row', gap: 8 },
   input: {
     flex: 1,
     backgroundColor: colors.surface2,
-    borderRadius: 999,
+    borderRadius: radius.pill,
     paddingHorizontal: 16,
     paddingVertical: 12,
     color: colors.mist,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: hairline,
   },
-  button: { backgroundColor: colors.gold, borderRadius: 999, paddingHorizontal: 20, justifyContent: 'center' },
-  buttonText: { color: colors.ink, fontWeight: '700' },
+  // Azul con texto blanco: el contraste no da para texto negro sobre `azure`
+  button: { backgroundColor: colors.azure, borderRadius: radius.pill, paddingHorizontal: 20, justifyContent: 'center' },
+  buttonText: { color: colors.mist, fontWeight: '700' },
   example: {
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', borderRadius: 999,
-    paddingHorizontal: 12, paddingVertical: 6, marginRight: 8,
+    borderWidth: 1, borderColor: hairline, borderRadius: radius.pill,
+    paddingHorizontal: 12, paddingVertical: 7, marginRight: 8,
   },
-  exampleText: { color: colors.lavender, fontSize: 11 },
+  exampleText: { color: colors.steel, fontSize: 11 },
   error: { color: colors.danger, marginTop: 10, fontSize: 13 },
-  resultsLabel: { color: colors.lavender, fontSize: 12, marginBottom: 10 },
+  resultsLabel: { color: colors.steel, fontSize: 12, marginBottom: 10 },
 });

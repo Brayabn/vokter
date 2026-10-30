@@ -28,9 +28,10 @@ Todas las respuestas son JSON. Los errores controlados tienen la forma `{ "error
 | GET | `/categories` | No | Categorías ordenadas por nombre |
 | GET | `/contents?search=&categorySlug=&sort=rating` | No | Buscar (sin distinguir mayúsculas), filtrar y ordenar |
 | GET | `/contents/:id` | No | Detalle con categoría y autor · `404` si no existe o el id no es válido |
-| POST | `/contents` | Sí (`expert`) | Crear contenido `{ title, description, categoryId, tags?, imageUrl? }` |
-| GET | `/experts?categorySlug=` | No | Expertos (opcionalmente los que publican en esa categoría) |
-| GET | `/experts/:id` | No | `{ expert, contents }`: perfil público y sus contenidos |
+| POST | `/contents` | Sí (`expert`) | Crear artículo `{ title, description, categoryId, tags?, imageUrl?, price? }` · `imageUrl` solo `https://` o `/api/media/...`; `price` entero en COP |
+| GET | `/media/catalogo/NN.jpg` | No | Fotos del catálogo (estáticas, `Cross-Origin-Resource-Policy: cross-origin`, caché 7 días) |
+| GET | `/experts?categorySlug=` | No | Marcas (opcionalmente las que tienen artículos en esa categoría) |
+| GET | `/experts/:id` | No | `{ expert, contents }`: página de la marca y sus artículos |
 
 ## Favoritos (requieren token)
 
@@ -44,7 +45,7 @@ Todas las respuestas son JSON. Los errores controlados tienen la forma `{ "error
 
 | Método | Ruta | Auth | Descripción |
 |---|---|---|---|
-| POST | `/ai/match` | No | `{ query: "texto en lenguaje natural" }` → top 3 expertos con `matchScore` (%) |
+| POST | `/ai/match` | No | `{ query: "texto en lenguaje natural" }` → top 3 marcas con `matchScore` (%) |
 
 ## Autenticación
 
@@ -59,7 +60,17 @@ JWT firmado con `JWT_SECRET` (HS256), expira según `JWT_EXPIRES_IN` (7 días). 
 Contraseña para todos: `vokter123`
 
 - `demo@vokter.com` — usuario
-- `laura`, `miguel`, `carlos`, `valentina`, `sofia`, `andres`, `david`, `camila`, `ana`, `julian` `@vokter.com` — expertos
+- `nord`, `atlas`, `solsticio`, `kuro`, `vantage`, `casatierra`, `meridian`, `fjord`, `lumen`, `base` `@vokter.com` — marcas demo
+- `gold`, `starhome`, `urbansport`, `pasofirme` `@vokter.com` — marcas del catálogo real (`backend/src/utils/catalogData.js`)
+
+Los artículos traen `price` (COP, `null` = precio a consultar) e `imageUrl` relativo a la API (`/api/media/...`); los clientes lo resuelven contra el origen de `VITE_API_URL` / `EXPO_PUBLIC_API_URL`.
+
+## Seguridad
+
+- Rate limit general de 1000 peticiones / 15 min por IP en `/api`, y 20 / 15 min en login y registro.
+- Validación de tipos y longitudes en auth, búsqueda, VOKTER AI y creación de artículos (un body con objetos devuelve `400`, no `500`).
+- Login con comparación bcrypt de tiempo constante aunque el correo no exista (no permite enumerar cuentas).
+- La web envía CSP, `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy` y `Permissions-Policy` (`vercel.json` y `nginx.conf`).
 
 ## Verificación automática
 

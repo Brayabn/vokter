@@ -1,8 +1,8 @@
-# VØKTER — Voice of Knowledge
+# VØKTER — Todo lo que buscas, en una sola frase
 
-Plataforma web + app Android que conecta a personas con **conocimiento, contenidos y expertos**.
-Su núcleo es **VOKTER AI**: describes lo que necesitas en lenguaje natural y el sistema te sugiere
-los expertos más afines con un porcentaje de coincidencia.
+**Tienda multimarca** (web + app Android) de ropa, tecnología, calzado, accesorios, hogar y deporte.
+Su núcleo es **VOKTER AI**: describes el artículo que buscas en lenguaje natural y el sistema te
+lleva a las marcas más afines con un porcentaje de coincidencia.
 
 ## URLs públicas
 
@@ -134,7 +134,7 @@ Navegador ──▶ localhost:3000 (nginx) ──/api──▶ backend:4100 ─�
   también comprueba la BD) → `frontend`.
 - PostgreSQL **no** se publica en el equipo (evita conflictos con un PostgreSQL local en 5432).
   El backend se conecta por la `DATABASE_URL` interna `postgresql://vokter:…@database:5432/vokter`.
-- El seed es idempotente (`findOrCreate`): reiniciar no duplica usuarios, categorías, contenidos ni expertos.
+- El seed es idempotente (`findOrCreate`): reiniciar no duplica usuarios, categorías, artículos ni marcas.
 
 ### Producción
 
@@ -174,21 +174,24 @@ y ejecuta `npx expo start`. El APK publicado usa siempre la API de producción.
 
 ## Descripción
 
-VØKTER toma como referencia la plataforma [VOKTER](https://vokter-five.vercel.app/) y la evoluciona
-hacia un **marketplace de conocimiento**: en lugar de navegar un catálogo, el usuario cuenta su
-necesidad y la plataforma lo conecta con quien puede resolverla.
+VØKTER toma como referencia la plataforma [VOKTER](https://vokter-five.vercel.app/) y la lleva a una
+**tienda multimarca**: en lugar de recorrer un catálogo con veinte filtros, el comprador describe lo
+que busca y la tienda lo deja frente al artículo y la marca que lo venden.
+
+El catálogo lo surten **diez marcas** con su propio surtido (NØRD Audio, Atlas Wear, Fjord Outdoor,
+Kuro Tech, Casa Tierra…) repartidas en **seis categorías**.
 
 ## Problema
 
-Encontrar a la persona correcta para un problema concreto (marketing, desarrollo, finanzas,
-idiomas…) suele implicar búsquedas por palabras exactas y listas largas de resultados poco
-relevantes, y la experiencia no continúa en el móvil.
+Buscar un artículo concreto ("una chaqueta que aguante la lluvia", "audífonos que aíslen el ruido
+del avión") obliga a traducir la necesidad a palabras exactas y a cribar listas largas de resultados
+poco relevantes, y la experiencia no continúa en el móvil.
 
 ## Propuesta
 
-- **Búsqueda por intención** (VOKTER AI): la consulta en lenguaje natural se compara con las
-  habilidades y la bio de cada experto y devuelve un *match score*.
-- **Catálogo** de contenidos y expertos por categoría, con búsqueda y filtros.
+- **Búsqueda por intención** (VOKTER AI): la consulta en lenguaje natural se compara con las líneas
+  de producto y el relato de cada marca y devuelve un *match score*.
+- **Catálogo** de artículos y marcas por categoría, con búsqueda y filtros.
 - **Web y app Android sobre la misma API y la misma cuenta**: los favoritos se sincronizan.
 - **Descarga directa** de la app desde la web mediante botón y **código QR**.
 
@@ -199,8 +202,8 @@ relevantes, y la experiencia no continúa en el móvil.
 | Registro / login (JWT) | ✅ | ✅ (token en SecureStore) |
 | VOKTER AI (match por lenguaje natural) | ✅ | ✅ |
 | Explorar: búsqueda + categorías | ✅ | ✅ |
-| Detalle de contenido | ✅ | ✅ |
-| Perfil de experto | ✅ | ✅ |
+| Ficha de artículo | ✅ | ✅ |
+| Página de marca | ✅ | ✅ |
 | Favoritos sincronizados | ✅ | ✅ |
 | Sesión resistente a errores de red | ✅ | ✅ |
 | Estados de carga / error / vacío | ✅ | ✅ |
@@ -352,7 +355,7 @@ desconocidos) → app → API HTTPS de Render → PostgreSQL de Neon.
 | Usuario | Contraseña | Rol |
 |---|---|---|
 | `demo@vokter.com` | `vokter123` | Usuario |
-| `laura@vokter.com` (y otros 9 expertos `@vokter.com`) | `vokter123` | Experto |
+| `fjord@vokter.com` (y otras 9 marcas `@vokter.com`) | `vokter123` | Marca (`expert`) |
 
 Son datos ficticios del seed. También puedes registrarte con una cuenta nueva.
 
@@ -366,7 +369,7 @@ Son datos ficticios del seed. También puedes registrarte con una cuenta nueva.
 | GET | `/api/categories` | Categorías |
 | GET | `/api/contents?search=&categorySlug=&sort=rating` | Buscar y filtrar |
 | GET | `/api/contents/:id` | Detalle |
-| GET | `/api/experts` · `/api/experts/:id` | Expertos · perfil + contenidos |
+| GET | `/api/experts` · `/api/experts/:id` | Marcas · página de marca + sus artículos |
 | GET/POST/DELETE | `/api/favorites[/:contentId]` | Favoritos (con token) |
 | POST | `/api/ai/match` | VOKTER AI |
 
@@ -395,7 +398,9 @@ Más detalle y alternativas descartadas: [`docs/architecture.md`](docs/architect
 ## Limitaciones conocidas
 
 - **Arranque en frío** (plan gratuito de Render): la primera petición tras ~15 min sin uso tarda 30-60 s. Conviene abrir `/api/health` antes de una demo.
-- El **contacto directo** con expertos está marcado como "próximamente" (no existe en el backend).
+- La **compra en línea** (carrito, pago, envío) está marcada como "próximamente": no existe en el
+  backend. Los artículos no tienen precio todavía, porque añadir la columna exige introducir
+  migraciones antes (`sequelize.sync()` crea tablas que falten, pero no altera las existentes).
 - **APK fuera de Play Store**: Chrome advierte "File might be harmful" al descargar un APK, Android pide permitir "orígenes desconocidos" y Play Protect puede advertir. Es el comportamiento estándar para apps fuera de la tienda.
 - Tras crear una cuenta en la app, el teclado puede quedar visible hasta tocar fuera (detalle menor de UX pendiente).
 - Solo **Android** (no hay build de iOS).
@@ -406,6 +411,12 @@ Más detalle y alternativas descartadas: [`docs/architecture.md`](docs/architect
 
 video evidencia, apk y web:
 https://youtube.com/shorts/IP43xlGtbiM?si=BtpxVXWM2HNX4s-G
+
+> ⚠️ Las evidencias y las capturas de esta sección se tomaron **antes** del rediseño a tienda
+> multimarca (paleta azul, vitrina 3D del landing, catálogo de artículos). La API y los flujos son
+> los mismos y el smoke test sigue en 20/20 en local, pero la interfaz de las capturas, el APK
+> publicado y el despliegue de Vercel/Render todavía muestran la versión anterior: hay que
+> redesplegar y repetir las capturas.
 
 **Entorno público (verificado):**
 

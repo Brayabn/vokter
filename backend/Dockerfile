@@ -15,6 +15,7 @@ RUN npm ci --omit=dev --omit=optional && npm cache clean --force
 # 2) Solo el código necesario para ejecutar la API.
 COPY src ./src
 COPY scripts ./scripts
+COPY public ./public
 
 # No ejecutar como root (el usuario "node" viene en la imagen oficial).
 USER node

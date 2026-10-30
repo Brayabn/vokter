@@ -10,7 +10,11 @@ const EXPERT_ATTRIBUTES = ['id', 'name', 'bio', 'skills', 'avatarUrl', 'rating']
 // GET /api/contents?search=&categorySlug=&sort=rating
 exports.list = async (req, res) => {
   try {
-    const { search, categorySlug, sort } = req.query;
+    // ?search=a&search=b llega como array: solo se aceptan strings acotados.
+    const asText = (v) => (typeof v === 'string' ? v.slice(0, 100) : '');
+    const search = asText(req.query.search).trim();
+    const categorySlug = asText(req.query.categorySlug);
+    const sort = asText(req.query.sort);
     const where = {};
     const include = [
       { model: Category, as: 'category' },
@@ -35,7 +39,7 @@ exports.list = async (req, res) => {
     return res.json({ contents });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: 'Error al listar contenidos.' });
+    return res.status(500).json({ error: 'Error al listar los artículos.' });
   }
 };
 
@@ -43,36 +47,53 @@ exports.list = async (req, res) => {
 exports.getById = async (req, res) => {
   try {
     const id = parseId(req.params.id);
-    if (!id) return res.status(404).json({ error: 'Contenido no encontrado.' });
+    if (!id) return res.status(404).json({ error: 'Artículo no encontrado.' });
     const content = await Content.findByPk(id, {
       include: [
         { model: Category, as: 'category' },
         { model: User, as: 'author', attributes: ['id', 'name', 'bio', 'avatarUrl', 'rating', 'skills'] },
       ],
     });
-    if (!content) return res.status(404).json({ error: 'Contenido no encontrado.' });
+    if (!content) return res.status(404).json({ error: 'Artículo no encontrado.' });
     return res.json({ content });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: 'Error al obtener el contenido.' });
+    return res.status(500).json({ error: 'Error al obtener el artículo.' });
   }
 };
+
+// Solo https o rutas propias de /api/media: evita javascript:, data: y URLs internas.
+const SAFE_IMAGE_URL = /^(https:\/\/[^\s"'<>]+|\/api\/media\/[\w\-./]+)$/;
 
 // POST /api/contents  (solo expertos)
 exports.create = async (req, res) => {
   try {
-    const { title, description, tags, categoryId, imageUrl } = req.body;
-    if (!title || !description || !categoryId) {
+    const { title, description, tags = '', categoryId, imageUrl = '', price = null } = req.body || {};
+    if (typeof title !== 'string' || typeof description !== 'string' || !title.trim() || !description.trim() || !categoryId) {
       return res.status(400).json({ error: 'title, description y categoryId son obligatorios.' });
     }
+    if (title.length > 150 || description.length > 5000 || typeof tags !== 'string' || tags.length > 500) {
+      return res.status(400).json({ error: 'Título, descripción o etiquetas demasiado largos.' });
+    }
+    if (typeof imageUrl !== 'string' || (imageUrl && (imageUrl.length > 500 || !SAFE_IMAGE_URL.test(imageUrl) || imageUrl.includes('..')))) {
+      return res.status(400).json({ error: 'imageUrl debe ser una URL https válida.' });
+    }
+    if (price !== null && (!Number.isInteger(price) || price < 0 || price > 1000000000)) {
+      return res.status(400).json({ error: 'price debe ser un entero positivo en pesos.' });
+    }
+    const id = parseId(String(categoryId));
+    const category = id && (await Category.findByPk(id));
+    if (!category) {
+      return res.status(400).json({ error: 'La categoría no existe.' });
+    }
     const content = await Content.create({
-      title, description, tags, categoryId, imageUrl,
+      title: title.trim(), description: description.trim(), tags, categoryId: category.id, imageUrl, price,
       authorId: req.user.id,
     });
     return res.status(201).json({ content });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: 'Error al crear el contenido.' });
+    return res.status(500).json({ error: 'Error al crear el artículo.' });
   }
 };
 
@@ -91,10 +112,10 @@ exports.listCategories = async (req, res) => {
 exports.getExpert = async (req, res) => {
   try {
     const id = parseId(req.params.id);
-    if (!id) return res.status(404).json({ error: 'Experto no encontrado.' });
+    if (!id) return res.status(404).json({ error: 'Marca no encontrada.' });
 
     const expert = await User.findOne({ where: { id, role: 'expert' }, attributes: EXPERT_ATTRIBUTES });
-    if (!expert) return res.status(404).json({ error: 'Experto no encontrado.' });
+    if (!expert) return res.status(404).json({ error: 'Marca no encontrada.' });
 
     const contents = await Content.findAll({
       where: { authorId: id },
@@ -104,7 +125,7 @@ exports.getExpert = async (req, res) => {
     return res.json({ expert, contents });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: 'Error al obtener el experto.' });
+    return res.status(500).json({ error: 'Error al obtener la marca.' });
   }
 };
 
@@ -133,6 +154,6 @@ exports.listExperts = async (req, res) => {
     return res.json({ experts });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: 'Error al listar expertos.' });
+    return res.status(500).json({ error: 'Error al listar las marcas.' });
   }
 };

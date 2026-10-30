@@ -26,7 +26,7 @@ exports.add = async (req, res) => {
   try {
     const contentId = parseId(req.params.contentId);
     const content = contentId && (await Content.findByPk(contentId));
-    if (!content) return res.status(404).json({ error: 'Contenido no encontrado.' });
+    if (!content) return res.status(404).json({ error: 'Artículo no encontrado.' });
 
     const [favorite, created] = await Favorite.findOrCreate({
       where: { userId: req.user.id, contentId },
@@ -42,7 +42,7 @@ exports.add = async (req, res) => {
 exports.remove = async (req, res) => {
   try {
     const contentId = parseId(req.params.contentId);
-    if (!contentId) return res.status(404).json({ error: 'Contenido no encontrado.' });
+    if (!contentId) return res.status(404).json({ error: 'Artículo no encontrado.' });
     await Favorite.destroy({ where: { userId: req.user.id, contentId } });
     return res.status(204).send();
   } catch (err) {

@@ -2,21 +2,195 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Tokens en variables CSS (mismos valores que tailwind.config.js). Los usan los
+   componentes de components/ui que mezclan colores con color-mix(). */
+:root {
+  --background: #04070D;
+  --foreground: #F2F8FF;
+  --primary: #1E6BFF;
+  --secondary: #6FD3FF;
+  --destructive: #FF6B81;
+  --border: #18243A;
+  --muted-foreground: #8CA3C2;
+  color-scheme: dark;
+}
+
 html {
   scroll-behavior: smooth;
 }
 
 body {
   -webkit-font-smoothing: antialiased;
+  background: var(--background);
+  overflow-x: hidden;
+}
+
+::selection {
+  background: color-mix(in oklch, var(--secondary) 35%, transparent);
+  color: var(--foreground);
 }
 
 /* Foco de teclado visible en toda la app, en vez del outline por defecto del navegador */
 :focus-visible {
-  outline: 2px solid #E8B04B;
+  outline: 2px solid #6FD3FF;
   outline-offset: 2px;
 }
 
+/* Texto con degradado azul para titulares */
+.text-gradient-azure {
+  background: linear-gradient(100deg, #A9E7FF 0%, #6FD3FF 40%, #1E6BFF 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.text-gradient-mist {
+  background: linear-gradient(180deg, #FFFFFF 0%, color-mix(in oklch, #F2F8FF 55%, transparent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ---------------------------------------------------------------------------
+   Vitrina 3D del hero (components/ui/showcase-3d.jsx). Un cubo real en CSS
+   (transform-style: preserve-3d) en lugar de WebGL: sin dependencias nuevas, se
+   ve nítido en cualquier densidad de pantalla y no bloquea el primer render.
+   GSAP solo anima la rotación del contenedor; las caras son HTML normal.
+   --------------------------------------------------------------------------- */
+.scene-3d {
+  perspective: 1100px;
+  perspective-origin: 50% 45%;
+}
+
+/* Capa que inclina toda la escena con el puntero. Va separada del cubo para que
+   el parallax y el giro continuo no se peleen por la misma propiedad transform,
+   y con preserve-3d para que la inclinación sea 3D de verdad y no un aplastado. */
+.scene-tilt {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+
+.cube-3d {
+  position: relative;
+  width: var(--cube-size);
+  height: var(--cube-size);
+  transform-style: preserve-3d;
+  /* Rotación base: sin JS (o con prefers-reduced-motion) el cubo ya se ve en 3D */
+  transform: rotateX(-16deg) rotateY(-30deg);
+}
+
+.cube-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid color-mix(in oklch, var(--secondary) 28%, transparent);
+  border-radius: 1.25rem;
+  background:
+    radial-gradient(120% 120% at 20% 10%, color-mix(in oklch, var(--secondary) 14%, transparent), transparent 60%),
+    linear-gradient(145deg, color-mix(in oklch, var(--primary) 18%, transparent), color-mix(in oklch, var(--background) 92%, transparent));
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklch, var(--foreground) 14%, transparent),
+    0 0 40px -12px color-mix(in oklch, var(--primary) 70%, transparent);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.cube-face--front  { transform: translateZ(calc(var(--cube-size) / 2)); }
+.cube-face--back   { transform: rotateY(180deg) translateZ(calc(var(--cube-size) / 2)); }
+.cube-face--right  { transform: rotateY(90deg) translateZ(calc(var(--cube-size) / 2)); }
+.cube-face--left   { transform: rotateY(-90deg) translateZ(calc(var(--cube-size) / 2)); }
+.cube-face--top    { transform: rotateX(90deg) translateZ(calc(var(--cube-size) / 2)); }
+.cube-face--bottom { transform: rotateX(-90deg) translateZ(calc(var(--cube-size) / 2)); }
+
+/* Aro de luz que gira en el plano del suelo, bajo el cubo */
+.cube-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(var(--cube-size) * 2);
+  height: calc(var(--cube-size) * 2);
+  margin-left: calc(var(--cube-size) * -1);
+  margin-top: calc(var(--cube-size) * -1);
+  border-radius: 50%;
+  border: 1px solid color-mix(in oklch, var(--secondary) 22%, transparent);
+  transform: rotateX(78deg);
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------------------
+   GlowCard (components/ui/spotlight-card.jsx). Van aquí una sola vez en lugar de
+   inyectarse con un <style> por cada tarjeta. --x / --y los escribe un único
+   listener de puntero en :root y las tarjetas los heredan.
+   --------------------------------------------------------------------------- */
+[data-glow]::before,
+[data-glow]::after {
+  pointer-events: none;
+  content: "";
+  position: absolute;
+  inset: calc(var(--border-size) * -1);
+  border: var(--border-size) solid transparent;
+  border-radius: calc(var(--radius) * 1px);
+  background-attachment: fixed;
+  background-size: calc(100% + (2 * var(--border-size))) calc(100% + (2 * var(--border-size)));
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+  mask: linear-gradient(transparent, transparent), linear-gradient(white, white);
+  mask-clip: padding-box, border-box;
+  mask-composite: intersect;
+}
+
+[data-glow]::before {
+  background-image: radial-gradient(
+    calc(var(--spotlight-size) * 0.75) calc(var(--spotlight-size) * 0.75) at
+    calc(var(--x, 0) * 1px)
+    calc(var(--y, 0) * 1px),
+    hsl(var(--hue, 210) calc(var(--saturation, 100) * 1%) calc(var(--lightness, 50) * 1%) / var(--border-spot-opacity, 1)), transparent 100%
+  );
+  filter: brightness(2);
+}
+
+[data-glow]::after {
+  background-image: radial-gradient(
+    calc(var(--spotlight-size) * 0.5) calc(var(--spotlight-size) * 0.5) at
+    calc(var(--x, 0) * 1px)
+    calc(var(--y, 0) * 1px),
+    hsl(0 100% 100% / var(--border-light-opacity, 1)), transparent 100%
+  );
+}
+
+/* Capa interna de brillo difuso. Se selecciona por su propio atributo para que un
+   GlowCard anidado (p. ej. MatchCard dentro de la tarjeta de VOKTER AI) no la imite. */
+[data-glow][data-glow-inner] {
+  position: absolute;
+  inset: 0;
+  will-change: filter;
+  opacity: var(--outer, 1);
+  border-radius: calc(var(--radius) * 1px);
+  border-width: calc(var(--border-size) * 20);
+  filter: blur(calc(var(--border-size) * 10));
+  background: none;
+  pointer-events: none;
+  border: none;
+}
+
+[data-glow][data-glow-inner]::before {
+  inset: -10px;
+  border-width: 10px;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;

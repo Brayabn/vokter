@@ -1,4 +1,5 @@
 const { config, validateConfig } = require('./config/env');
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -6,6 +7,7 @@ const rateLimit = require('express-rate-limit');
 
 const { sequelize } = require('./models');
 const { seedDemoData } = require('./utils/seed');
+const { ensureSchema } = require('./utils/schema');
 const authRoutes = require('./routes/authRoutes');
 const contentRoutes = require('./routes/contentRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
@@ -43,6 +45,14 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
   message: { error: 'Demasiados intentos. Intenta de nuevo en unos minutos.' },
 });
+// Límite general por IP para toda la API (protección básica contra abuso / scraping).
+app.use('/api', rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 1000,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Demasiadas peticiones. Intenta de nuevo en unos minutos.' },
+}));
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
 
@@ -55,6 +65,15 @@ app.get('/api/health', async (req, res) => {
     return res.status(503).json({ status: 'error', service: 'vokter-backend', database: 'unreachable' });
   }
 });
+
+// Fotos del catálogo. CORP cross-origin: la web (otro dominio) y la app las cargan con <img>.
+// Solo archivos estáticos: sin listado de directorio ni archivos ocultos.
+app.use('/api/media', (req, res, next) => {
+  res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+  next();
+}, express.static(path.join(__dirname, '..', 'public'), {
+  index: false, dotfiles: 'deny', maxAge: '7d', fallthrough: true,
+}));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/contents', contentRoutes);
@@ -82,6 +101,7 @@ async function start() {
     await sequelize.authenticate();
     // sync() crea las tablas que no existan (no altera ni borra las existentes).
     await sequelize.sync();
+    await ensureSchema();
     console.log(`✅ Base de datos conectada (${sequelize.getDialect()}) y sincronizada.`);
 
     if (config.seedDemoData) {

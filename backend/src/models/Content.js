@@ -9,6 +9,8 @@ const Content = sequelize.define('Content', {
   tags: { type: DataTypes.STRING, defaultValue: '' },
   rating: { type: DataTypes.FLOAT, defaultValue: 0 },
   imageUrl: { type: DataTypes.STRING, defaultValue: '' },
+  // Precio en pesos colombianos (COP). null = precio a consultar.
+  price: { type: DataTypes.INTEGER, allowNull: true, validate: { min: 0 } },
 }, {
   tableName: 'contents',
   timestamps: true,

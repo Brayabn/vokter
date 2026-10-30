@@ -4,7 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import api from '../api/client';
 import { useApiRequest } from '../hooks/useApiRequest';
-import { colors } from '../theme';
+import Aurora from '../components/Aurora';
+import { colors, TAB_BAR_SPACE } from '../theme';
 import ContentCard from '../components/ContentCard';
 import { LoadingState, ErrorState, EmptyState } from '../components/StateViews';
 
@@ -20,6 +21,8 @@ export default function FavoritesScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      <Aurora />
+      <Text style={styles.eyebrow}>TU LISTA</Text>
       <Text style={styles.title}>Tus favoritos</Text>
       {error ? (
         <ErrorState message={error} onRetry={reload} />
@@ -34,9 +37,9 @@ export default function FavoritesScreen({ navigation }) {
           onRefresh={reload}
           ListEmptyComponent={
             <EmptyState
-              message="Aún no tienes favoritos guardados."
-              actionLabel="Explorar contenidos"
-              onAction={() => navigation.navigate('Explorar')}
+              message="Aún no has guardado ningún artículo."
+              actionLabel="Ver el catálogo"
+              onAction={() => navigation.navigate('Catálogo')}
             />
           }
           renderItem={({ item }) => (
@@ -50,6 +53,7 @@ export default function FavoritesScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.ink },
-  title: { color: colors.mist, fontSize: 24, fontWeight: '800', paddingHorizontal: 20, paddingTop: 16 },
-  list: { padding: 20 },
+  eyebrow: { color: colors.sky, fontSize: 10, letterSpacing: 3, fontWeight: '700', paddingHorizontal: 20, paddingTop: 16 },
+  title: { color: colors.mist, fontSize: 26, fontWeight: '800', paddingHorizontal: 20, paddingTop: 6 },
+  list: { padding: 20, paddingBottom: TAB_BAR_SPACE },
 });

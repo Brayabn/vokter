@@ -49,16 +49,16 @@ sequenceDiagram
 flowchart TD
   Splash["Splash nativo<br/>(se mantiene mientras se restaura la sesión)"] --> Tabs
   subgraph Tabs["Pestañas"]
-    Inicio["Inicio<br/>VOKTER AI · categorías · expertos"]
+    Inicio["Inicio<br/>VOKTER AI · categorías · marcas"]
     Explorar["Explorar<br/>búsqueda con debounce · filtros"]
-    Expertos["Expertos<br/>filtro por categoría"]
+    Expertos["Marcas<br/>filtro por categoría"]
     Favoritos["Favoritos<br/>(solo con sesión)"]
     Perfil["Perfil / Login"]
   end
-  Inicio --> Detalle["Detalle de contenido"]
+  Inicio --> Detalle["Ficha de artículo"]
   Explorar --> Detalle
   Favoritos --> Detalle
-  Inicio --> PerfilExperto["Perfil de experto"]
+  Inicio --> PerfilExperto["Página de marca"]
   Expertos --> PerfilExperto
   Detalle --> PerfilExperto
   PerfilExperto --> Detalle

@@ -1,7 +1,9 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { colors } from '../theme';
 
-const AVATAR_COLORS = ['#E8B04B', '#7DD3FC', '#C4B5FD', '#86EFAC', '#FDA4AF'];
+// Toda la gama es azul claro o blanco azulado: la inicial va en `ink` (negro),
+// así que cada color tiene que ser lo bastante claro para leerse debajo.
+const AVATAR_COLORS = ['#6FD3FF', '#A9E7FF', '#4F8DFF', '#CDEBFF', '#8AB6FF'];
 
 function colorForName(name = '') {
   const idx = (name.charCodeAt(0) || 0) % AVATAR_COLORS.length;

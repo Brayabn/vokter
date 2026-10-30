@@ -1,11 +1,11 @@
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Text } from 'react-native';
+import { Text, View, StyleSheet } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 
 import { useAuth } from '../context/AuthContext';
-import { colors } from '../theme';
+import { colors, hairline, radius } from '../theme';
 
 import HomeScreen from '../screens/HomeScreen';
 import ExploreScreen from '../screens/ExploreScreen';
@@ -27,20 +27,32 @@ const navTheme = {
     background: colors.ink,
     card: colors.surface,
     text: colors.mist,
-    border: 'rgba(255,255,255,0.05)',
-    primary: colors.gold,
+    border: hairline,
+    primary: colors.sky,
   },
 };
 
-// Cabecera con botón "atrás" para las pantallas de detalle
+// Cabecera de las pantallas de detalle: sin título y con el mismo negro del
+// fondo, para que la pantalla se sienta continua y el contenido mande.
 const detailHeaderOptions = {
   headerShown: true,
   headerTitle: '',
+  headerShadowVisible: false,
   headerStyle: { backgroundColor: colors.ink },
-  headerTintColor: colors.mist,
+  headerTintColor: colors.sky,
 };
 
-const ICONS ={ Inicio: '🏠', Explorar: '🔍', Expertos: '🧑‍💼', Favoritos: '★', Perfil: '👤' };
+// Los nombres de las pestañas son también las claves de navegación: si cambian,
+// hay que actualizar los navigation.navigate('...') de las pantallas.
+const ICONS = { Inicio: '🏠', Catálogo: '🔎', Marcas: '🏷️', Favoritos: '★', Perfil: '👤' };
+
+function TabIcon({ name, color, focused }) {
+  return (
+    <View style={[styles.tabIcon, focused && styles.tabIconActive]}>
+      <Text style={{ fontSize: 15, color }}>{ICONS[name]}</Text>
+    </View>
+  );
+}
 
 function MainTabs() {
   const { user } = useAuth();
@@ -49,16 +61,20 @@ function MainTabs() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: colors.gold,
-        tabBarInactiveTintColor: colors.lavender,
-        tabBarStyle: { backgroundColor: colors.surface, borderTopColor: 'rgba(255,255,255,0.05)' },
-        // `color` hace que "★" (que no es emoji) siga el color activo/inactivo de la barra
-        tabBarIcon: ({ color }) => <Text style={{ fontSize: 16, color }}>{ICONS[route.name]}</Text>,
+        tabBarActiveTintColor: colors.sky,
+        tabBarInactiveTintColor: colors.steel,
+        // Barra flotante: se despega de los bordes y deja ver el fondo detrás.
+        // Las listas reservan TAB_BAR_SPACE abajo para no quedar tapadas.
+        tabBarStyle: styles.tabBar,
+        tabBarItemStyle: { paddingTop: 8 },
+        tabBarLabelStyle: styles.tabLabel,
+        // `color` hace que "★" (que no es emoji) siga el color activo/inactivo
+        tabBarIcon: ({ color, focused }) => <TabIcon name={route.name} color={color} focused={focused} />,
       })}
     >
       <Tab.Screen name="Inicio" component={HomeScreen} />
-      <Tab.Screen name="Explorar" component={ExploreScreen} />
-      <Tab.Screen name="Expertos" component={ExpertsScreen} />
+      <Tab.Screen name="Catálogo" component={ExploreScreen} />
+      <Tab.Screen name="Marcas" component={ExpertsScreen} />
       {user && <Tab.Screen name="Favoritos" component={FavoritesScreen} />}
       <Tab.Screen name="Perfil" component={user ? ProfileScreen : LoginScreen} />
     </Tab.Navigator>
@@ -84,3 +100,34 @@ export default function RootNavigator() {
     </NavigationContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBar: {
+    position: 'absolute',
+    left: 14,
+    right: 14,
+    bottom: 14,
+    height: 68,
+    paddingBottom: 10,
+    borderRadius: radius.lg,
+    backgroundColor: 'rgba(9,15,25,0.96)',
+    borderTopWidth: 0,
+    borderWidth: 1,
+    borderColor: hairline,
+    shadowColor: '#000',
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 16,
+  },
+  tabLabel: { fontSize: 10, fontWeight: '600' },
+  tabIcon: {
+    width: 34,
+    height: 26,
+    borderRadius: radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  // La pestaña activa se marca con un halo azul además del color del icono
+  tabIconActive: { backgroundColor: 'rgba(30,107,255,0.22)' },
+});
