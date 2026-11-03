@@ -71,8 +71,14 @@ bundle embebido contenga la URL HTTPS del API y ninguna IP privada/localhost (ve
 
 ## 5. Web — Vercel
 
-Proyecto con raíz `frontend/` (build `npm run build`, salida `dist`, rewrites SPA en
-[`frontend/vercel.json`](../frontend/vercel.json)).
+El despliegue por Git parte de la **raíz del repositorio**, así que la configuración vive en
+[`vercel.json`](../vercel.json) (raíz): compila `frontend/` con `npm ci` + `npm run build` y publica
+`frontend/dist`, con los rewrites de SPA y las cabeceras de seguridad.
+
+> **Dos `vercel.json`.** Vercel solo lee el que está dentro del *Root Directory* del proyecto. Con
+> Root Directory vacío (la configuración actual) manda el de la raíz; si se fija
+> `Root Directory = frontend`, manda [`frontend/vercel.json`](../frontend/vercel.json) y el de la
+> raíz se ignora. Los dos traen los mismos rewrites y cabeceras: **al tocar uno hay que tocar el otro**.
 
 | Variable (Production) | Valor |
 |---|---|
@@ -84,27 +90,26 @@ Las variables `VITE_*` se incrustan **al compilar**: tras cambiarlas hay que red
 
 ### Despliegue automático desde Git
 
-El proyecto puede crearse con `vercel` (CLI) desde `frontend/`, pero entonces **solo se actualiza
-cuando alguien vuelve a ejecutar el CLI**: un `git push` no lo redespliega. Para que cada push a
-`main` publique la web hay que conectar el repositorio en **Settings → Git** del proyecto, con:
+Un proyecto creado con `vercel` (CLI) desde `frontend/` **solo se actualiza cuando alguien vuelve a
+ejecutar el CLI**: un `git push` no lo redespliega. Para que cada push a `main` publique la web hay
+que conectar el repositorio en **Settings → Git** con Production Branch `main`.
 
-| Ajuste | Valor |
-|---|---|
-| Repository | `Brayabn/vokter` |
-| Production Branch | `main` |
-| Root Directory | `frontend` |
+Al conectarlo, el build pasa a arrancar en la raíz del repositorio, no en `frontend/`. Si no hay un
+`vercel.json` en la raíz, Vercel no detecta framework, **no compila nada** y publica el repositorio
+tal cual: `/` responde 404 y quedan expuestos `render.yaml`, `docker-compose.yml` y `docs/`. Eso es
+lo que corrige el `vercel.json` de la raíz.
 
-Señal de que la conexión Git **no** está activa: el commit en GitHub no muestra ningún check ni
-deployment de Vercel. Se comprueba sin entrar al panel:
+Comprobaciones sin entrar al panel:
 
 ```bash
-gh api repos/Brayabn/vokter/commits/main/status --jq '.statuses | length'   # 0 = Vercel no construyó
-gh api "repos/Brayabn/vokter/deployments?per_page=5" --jq '.[].environment'
+gh api repos/Brayabn/vokter/commits/main/status --jq '.statuses[].state'    # success = Vercel construyó
+gh api "repos/Brayabn/vokter/deployments?per_page=5" --jq '.[].environment' # Production = despliegue de Vercel
+curl -s -o /dev/null -w '%{http_code}\n' https://vokter-web.vercel.app/render.yaml  # debe ser el HTML de la SPA, no el YAML
 ```
 
 > **Cuidado con «Redeploy».** El botón *Redeploy* de un despliegue existente reconstruye **el mismo
 > commit**, no el último de `main`. Para publicar lo último: *Deployments → Create Deployment* (o
-> `vercel --prod` desde `frontend/`).
+> `vercel --prod`).
 
 Verificar que producción corresponde al último commit, sin abrir el navegador:
 
