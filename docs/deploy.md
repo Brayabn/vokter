@@ -82,6 +82,37 @@ Proyecto con raíz `frontend/` (build `npm run build`, salida `dist`, rewrites S
 
 Las variables `VITE_*` se incrustan **al compilar**: tras cambiarlas hay que redesplegar.
 
+### Despliegue automático desde Git
+
+El proyecto puede crearse con `vercel` (CLI) desde `frontend/`, pero entonces **solo se actualiza
+cuando alguien vuelve a ejecutar el CLI**: un `git push` no lo redespliega. Para que cada push a
+`main` publique la web hay que conectar el repositorio en **Settings → Git** del proyecto, con:
+
+| Ajuste | Valor |
+|---|---|
+| Repository | `Brayabn/vokter` |
+| Production Branch | `main` |
+| Root Directory | `frontend` |
+
+Señal de que la conexión Git **no** está activa: el commit en GitHub no muestra ningún check ni
+deployment de Vercel. Se comprueba sin entrar al panel:
+
+```bash
+gh api repos/Brayabn/vokter/commits/main/status --jq '.statuses | length'   # 0 = Vercel no construyó
+gh api "repos/Brayabn/vokter/deployments?per_page=5" --jq '.[].environment'
+```
+
+> **Cuidado con «Redeploy».** El botón *Redeploy* de un despliegue existente reconstruye **el mismo
+> commit**, no el último de `main`. Para publicar lo último: *Deployments → Create Deployment* (o
+> `vercel --prod` desde `frontend/`).
+
+Verificar que producción corresponde al último commit, sin abrir el navegador:
+
+```bash
+curl -sI https://vokter-web.vercel.app/ | grep -i content-security-policy   # debe existir
+curl -s https://vokter-web.vercel.app/ | grep -i '<title>'                  # debe coincidir con frontend/index.html
+```
+
 ## 6. Cerrar el ciclo — CORS
 
 En Render, definir `CORS_ORIGIN=https://<proyecto>.vercel.app` (varios dominios separados por
