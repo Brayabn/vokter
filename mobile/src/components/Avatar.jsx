@@ -1,30 +1,34 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { colors } from '../theme';
+import { colors, fonts } from '../theme';
 
-// Toda la gama es azul claro o blanco azulado: la inicial va en `ink` (negro),
-// así que cada color tiene que ser lo bastante claro para leerse debajo.
-const AVATAR_COLORS = ['#6FD3FF', '#A9E7FF', '#4F8DFF', '#CDEBFF', '#8AB6FF'];
-
-function colorForName(name = '') {
-  const idx = (name.charCodeAt(0) || 0) % AVATAR_COLORS.length;
-  return AVATAR_COLORS[idx];
-}
-
-// Avatar con la inicial del nombre; el color es estable para cada nombre.
-export default function Avatar({ name = '', size = 44 }) {
+/**
+ * Avatar con la inicial del nombre, como el de la ficha de marca de la web:
+ * círculo azure con texto mist, anillo sky separado por un hueco negro
+ * (ring-2 ring-sky/40 ring-offset-4 ring-offset-ink) y resplandor azul.
+ */
+export default function Avatar({ name = '', size = 56, ring = 'rgba(111,211,255,0.4)' }) {
+  const gap = size >= 80 ? 4 : 3;
   return (
     <View
       style={[
-        styles.avatar,
-        { width: size, height: size, borderRadius: size / 2, backgroundColor: colorForName(name) },
+        styles.ring,
+        { width: size + (gap + 2) * 2, height: size + (gap + 2) * 2, borderRadius: size, borderColor: ring },
       ]}
     >
-      <Text style={[styles.initial, { fontSize: size * 0.38 }]}>{name.charAt(0).toUpperCase()}</Text>
+      <View style={[styles.avatar, { width: size, height: size, borderRadius: size / 2 }]}>
+        <Text style={[styles.initial, { fontSize: size * 0.42 }]}>{name.charAt(0).toUpperCase()}</Text>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  avatar: { justifyContent: 'center', alignItems: 'center' },
-  initial: { fontWeight: '800', color: colors.ink },
+  ring: { borderWidth: 2, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.ink },
+  avatar: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.azure,
+    boxShadow: '0px 0px 30px -8px rgba(30,107,255,0.9)',
+  },
+  initial: { fontFamily: fonts.displayHeavy, color: colors.mist },
 });

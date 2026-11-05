@@ -1,52 +1,70 @@
 import { View, Text, Image, StyleSheet } from 'react-native';
+import { ArrowUpRight, Star } from 'lucide-react-native';
 import { mediaUrl, formatPrice } from '../api/client';
-import { colors, hairline, radius, veil } from '../theme';
-import PressableCard from './PressableCard';
+import { alpha, colors, fonts, radius } from '../theme';
+import GlowCard from './GlowCard';
 
-// Tarjeta de artículo del catálogo.
-export default function ContentCard({ content, onPress }) {
+// Tarjeta de artículo del catálogo (frontend/src/components/ContentCard.jsx).
+export default function ContentCard({ content, onPress, style }) {
   const image = mediaUrl(content.imageUrl);
   return (
-    <PressableCard style={styles.card} onPress={onPress}>
-      {!!image && <Image source={{ uri: image }} style={styles.image} resizeMode="contain" accessibilityLabel={content.title} />}
+    <GlowCard style={[styles.card, style]} onPress={onPress} accessibilityLabel={`${content.title}, ${formatPrice(content.price)}`}>
+      {!!image && (
+        <View style={styles.imageBox}>
+          <Image source={{ uri: image }} style={styles.image} resizeMode="contain" accessibilityLabel={content.title} />
+        </View>
+      )}
       <View style={styles.row}>
         <View style={styles.categoryChip}>
           <Text style={styles.category}>{content.category?.icon} {content.category?.name}</Text>
         </View>
-        <Text style={styles.rating}>★ {content.rating?.toFixed(1)}</Text>
+        <View style={styles.ratingRow}>
+          <Star size={12} color={colors.sky} fill={colors.sky} />
+          <Text style={styles.rating}>{content.rating?.toFixed(1)}</Text>
+        </View>
       </View>
       <Text style={styles.title} numberOfLines={2}>{content.title}</Text>
       {'price' in content && <Text style={styles.price}>{formatPrice(content.price)}</Text>}
       <Text style={styles.description} numberOfLines={2}>{content.description}</Text>
-      {/* GET /favorites no incluye la marca: solo se muestra si viene en los datos */}
-      {!!content.author?.name && (
-        <View style={styles.footer}>
-          <Text style={styles.brand}>Marca {content.author.name}</Text>
-          <Text style={styles.arrow}>→</Text>
-        </View>
-      )}
-    </PressableCard>
+      <View style={styles.footer}>
+        {/* GET /favorites no incluye la marca: solo se muestra si viene en los datos */}
+        <Text style={styles.brand} numberOfLines={1}>
+          {content.author?.name ? <>Marca <Text style={{ color: colors.mist }}>{content.author.name}</Text></> : 'Ver artículo'}
+        </Text>
+        <ArrowUpRight size={16} color={colors.steel} />
+      </View>
+    </GlowCard>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: hairline,
+  card: { padding: 24 },
+  // -mx-2 -mt-2 mb-4 aspect-[4/3] rounded-xl bg-white
+  imageBox: {
+    marginHorizontal: -8,
+    marginTop: -8,
+    marginBottom: 16,
+    aspectRatio: 4 / 3,
+    borderRadius: radius.sm,
+    backgroundColor: '#FFFFFF',
+    overflow: 'hidden',
   },
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
-  categoryChip: { backgroundColor: veil, borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 4 },
-  category: { color: colors.steel, fontSize: 11 },
-  rating: { color: colors.sky, fontSize: 12, fontVariant: ['tabular-nums'] },
-  image: { width: '100%', height: 180, borderRadius: radius.md, backgroundColor: '#ffffff', marginBottom: 12 },
-  price: { color: colors.sky, fontSize: 15, fontWeight: '700', marginBottom: 6, fontVariant: ['tabular-nums'] },
-  title: { color: colors.mist, fontSize: 16, fontWeight: '700', marginBottom: 6, lineHeight: 21 },
-  description: { color: colors.steel, fontSize: 13, lineHeight: 19 },
-  footer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 },
-  brand: { color: colors.steel, fontSize: 11, flexShrink: 1 },
-  arrow: { color: colors.sky, fontSize: 14 },
+  image: { width: '100%', height: '100%' },
+  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  categoryChip: {
+    backgroundColor: alpha.white5,
+    borderWidth: 1,
+    borderColor: alpha.white10,
+    borderRadius: radius.pill,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  category: { fontFamily: fonts.mono, color: colors.steel, fontSize: 12 },
+  ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  rating: { fontFamily: fonts.mono, color: colors.sky, fontSize: 12 },
+  title: { fontFamily: fonts.displaySemi, color: colors.mist, fontSize: 18, lineHeight: 26, marginBottom: 8 },
+  price: { fontFamily: fonts.monoSemi, color: colors.sky, fontSize: 16, marginBottom: 8 },
+  description: { fontFamily: fonts.body, color: colors.steel, fontSize: 14, lineHeight: 20, marginBottom: 20 },
+  footer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 },
+  brand: { fontFamily: fonts.body, color: colors.steel, fontSize: 12, flexShrink: 1 },
 });

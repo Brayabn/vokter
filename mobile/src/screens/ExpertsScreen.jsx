@@ -1,14 +1,16 @@
 import { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View } from 'react-native';
 import api from '../api/client';
 import { useApiRequest } from '../hooks/useApiRequest';
-import Aurora from '../components/Aurora';
-import { colors, hairline, radius, TAB_BAR_SPACE } from '../theme';
+import CategoryChips from '../components/CategoryChips';
 import ExpertCard from '../components/ExpertCard';
 import FadeInView from '../components/FadeInView';
+import { Page } from '../components/Screen';
 import { LoadingState, ErrorState, EmptyState } from '../components/StateViews';
+import { PageHeader } from '../components/Typography';
 
+// Directorio de marcas (solo en la app; en la web se llega a cada marca desde VOKTER AI o
+// desde la ficha de un artículo). Mismo diseño que el catálogo.
 export default function ExpertsScreen({ navigation }) {
   const [activeCategory, setActiveCategory] = useState(null);
 
@@ -23,73 +25,31 @@ export default function ExpertsScreen({ navigation }) {
   }, [activeCategory]);
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <Aurora />
-      <View style={styles.header}>
-        <Text style={styles.eyebrow}>MARCAS</Text>
-        <Text style={styles.title}>Quién vende en VØKTER</Text>
-        <Text style={styles.subtitle}>Diez marcas con catálogo propio, filtradas por categoría.</Text>
+    <Page>
+      <PageHeader
+        kicker="Marcas"
+        title="Quién vende en"
+        accent="VØKTER"
+        subtitle="Diez marcas con catálogo propio, filtradas por categoría."
+      />
 
-        <FlatList
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          data={categories || []}
-          keyExtractor={(c) => c.slug}
-          style={{ marginTop: 14 }}
-          ListHeaderComponent={
-            <TouchableOpacity
-              style={[styles.chip, !activeCategory && styles.chipActive]}
-              onPress={() => setActiveCategory(null)}
-            >
-              <Text style={[styles.chipText, !activeCategory && styles.chipTextActive]}>Todos</Text>
-            </TouchableOpacity>
-          }
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={[styles.chip, activeCategory === item.slug && styles.chipActive]}
-              onPress={() => setActiveCategory(item.slug)}
-            >
-              <Text style={[styles.chipText, activeCategory === item.slug && styles.chipTextActive]}>
-                {item.icon} {item.name}
-              </Text>
-            </TouchableOpacity>
-          )}
-        />
-      </View>
+      <CategoryChips categories={categories} active={activeCategory} onChange={setActiveCategory} allLabel="Todas" />
 
       {loading ? (
         <LoadingState />
       ) : error ? (
         <ErrorState message={error} onRetry={reload} />
+      ) : experts.length === 0 ? (
+        <EmptyState message="Ninguna marca tiene artículos en esta categoría todavía." />
       ) : (
-        <FlatList
-          data={experts}
-          keyExtractor={(e) => String(e.id)}
-          contentContainerStyle={styles.list}
-          ListEmptyComponent={<EmptyState message="Ninguna marca tiene artículos en esta categoría todavía." />}
-          renderItem={({ item, index }) => (
-            <FadeInView delay={index * 60}>
-              <ExpertCard expert={item} onPress={() => navigation.navigate('ExpertProfile', { expert: item })} />
+        <View style={{ gap: 20 }}>
+          {experts.map((e, i) => (
+            <FadeInView key={e.id} delay={Math.min(i, 6) * 60}>
+              <ExpertCard expert={e} onPress={() => navigation.navigate('ExpertProfile', { expert: e })} />
             </FadeInView>
-          )}
-        />
+          ))}
+        </View>
       )}
-    </SafeAreaView>
+    </Page>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.ink },
-  header: { paddingHorizontal: 20, paddingTop: 16 },
-  eyebrow: { color: colors.sky, fontSize: 10, letterSpacing: 3, fontWeight: '700', marginBottom: 6 },
-  title: { color: colors.mist, fontSize: 26, fontWeight: '800' },
-  subtitle: { color: colors.steel, fontSize: 13, marginTop: 6, lineHeight: 19 },
-  chip: {
-    borderWidth: 1, borderColor: hairline, borderRadius: radius.pill,
-    paddingHorizontal: 14, paddingVertical: 8, marginRight: 8,
-  },
-  chipActive: { borderColor: colors.sky, backgroundColor: 'rgba(111,211,255,0.12)' },
-  chipText: { color: colors.steel, fontSize: 13 },
-  chipTextActive: { color: colors.sky },
-  list: { padding: 20, paddingTop: 16, paddingBottom: TAB_BAR_SPACE },
-});

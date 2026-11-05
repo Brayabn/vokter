@@ -84,7 +84,7 @@ El despliegue por Git parte de la **raíz del repositorio**, así que la configu
 |---|---|
 | `VITE_API_URL` | `https://<servicio>.onrender.com/api` |
 | `VITE_APK_URL` | URL del asset del GitHub Release |
-| `VITE_APK_VERSION` | `1.0.0` |
+| `VITE_APK_VERSION` | `1.1.0` |
 
 Las variables `VITE_*` se incrustan **al compilar**: tras cambiarlas hay que redesplegar.
 

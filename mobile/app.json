@@ -2,7 +2,7 @@
   "expo": {
     "name": "VØKTER",
     "slug": "vokter-mobile",
-    "version": "1.0.1",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -39,7 +39,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#04070D"
         }
-      ]
+      ],
+      "expo-font"
     ],
     "extra": {
       "expo-status-bar": {
