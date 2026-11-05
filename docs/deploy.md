@@ -125,6 +125,39 @@ coma). Render redespliega automáticamente.
 
 ## Actualizar la app
 
+> **El APK no se actualiza solo.** La web se redespliega con cada push a `main`, pero un APK ya
+> instalado sigue ejecutando el JavaScript que se empaquetó el día que se compiló. Cambiar
+> `mobile/src/` no afecta a los teléfonos que ya tienen la app: **hay que recompilar y volver a
+> publicar**. Si la app muestra una versión vieja, lo primero que hay que mirar es la fecha del
+> release del APK frente a la del último commit que tocó `mobile/`.
+
 1. Subir `expo.version` y `android.versionCode` en `mobile/app.json`.
-2. Nuevo build con EAS → nuevo release (`v1.1.0`) con el APK.
-3. Actualizar `VITE_APK_URL` y `VITE_APK_VERSION` en Vercel y redesplegar la web.
+2. Nuevo build con EAS:
+
+```bash
+cd mobile
+npx eas-cli@latest login            # cuenta de Expo (solo la primera vez)
+npx eas-cli@latest build --platform android --profile preview
+```
+
+3. Descargar el `.apk` que entrega EAS, crear el release en GitHub y adjuntarlo.
+4. Actualizar `VITE_APK_URL` y `VITE_APK_VERSION` en Vercel y redesplegar la web.
+
+**Por qué EAS y no un build local.** EAS firma con el keystore que gestiona él mismo, el mismo de
+los APK anteriores, así que el nuevo se instala **encima** del que ya está en el teléfono. Un build
+local (`npx expo prebuild -p android` + `./gradlew assembleRelease`) usa el keystore de depuración:
+genera un APK válido para probar, pero con otra firma, así que Android lo rechaza sobre el anterior
+y obliga a desinstalar primero. Además compila código nativo para cuatro arquitecturas, lo que pide
+bastante RAM.
+
+**La URL del API en el APK.** `mobile/.env` está en `.gitignore` y nunca se sube a EAS, así que la
+IP privada que se usa en desarrollo no puede acabar dentro del APK: el valor que se empaqueta es el
+`EXPO_PUBLIC_API_URL` del perfil de [`mobile/eas.json`](../mobile/eas.json). Para comprobarlo sin
+instalar nada, se exporta el bundle y se inspecciona:
+
+```bash
+cd mobile
+EXPO_PUBLIC_API_URL=https://<servicio>.onrender.com/api npx expo export --platform android --output-dir /tmp/vokter-export
+grep -ao "https://[a-z0-9.-]*onrender.com/api" /tmp/vokter-export/_expo/static/js/android/*.hbc | head -1
+grep -aoE "192\.168\.[0-9]+\.[0-9]+" /tmp/vokter-export/_expo/static/js/android/*.hbc   # debe estar vacío
+```
