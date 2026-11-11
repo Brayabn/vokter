@@ -207,6 +207,7 @@ poco relevantes, y la experiencia no continúa en el móvil.
 | Favoritos sincronizados | ✅ | ✅ |
 | Sesión resistente a errores de red | ✅ | ✅ |
 | Estados de carga / error / vacío | ✅ | ✅ |
+| Mismo diseño (landing con vitrina 3D, GlowCard, tipografías, menú) | ✅ | ✅ |
 | Descarga del APK con botón + QR | ✅ (`/descarga`) | — |
 
 ## Arquitectura
@@ -226,7 +227,7 @@ flujos (auth, web, móvil, descarga): [`docs/flows.md`](docs/flows.md).
 
 - **Backend:** Node.js 20, Express 4, Sequelize 6, PostgreSQL (producción) / SQLite (local), JWT, bcrypt, helmet, express-rate-limit.
 - **Web:** React 18, Vite 5, Tailwind CSS 3, React Router 6, axios, qrcode.react, anime.js.
-- **Móvil:** Expo SDK 57, React Native 0.86, React Navigation 7, expo-secure-store, axios.
+- **Móvil:** Expo SDK 57, React Native 0.86, React Navigation 7, expo-secure-store, axios, react-native-svg, expo-linear-gradient, lucide-react-native y las fuentes de la web (Sora, Inter, IBM Plex Mono).
 - **Infraestructura:** Render (API), Neon (PostgreSQL), Vercel (web), EAS Build (APK), GitHub Releases (descarga).
 - **Local:** Docker Compose (nginx + Node + PostgreSQL 16).
 

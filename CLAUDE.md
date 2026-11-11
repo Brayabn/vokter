@@ -144,8 +144,16 @@ Reglas de resiliencia que ese código implementa y que hay que preservar:
   backend.
 
 Web: rutas en `App.jsx` con `ProtectedRoute` para `/dashboard` y `/favoritos`; `vercel.json` reescribe
-todo a `index.html`. Móvil: `navigation/RootNavigator.jsx` (tabs + stack), tema en `src/theme.js`,
-token en SecureStore.
+todo a `index.html`. Móvil: `navigation/RootNavigator.jsx` (una sola pila, sin pestañas: cada
+pantalla dibuja `components/AppHeader`, el Navbar de la web con su menú; `protect()` hace de
+`ProtectedRoute`), tema en `src/theme.js`, token en SecureStore.
+
+**La app móvil replica la estética de la web**: mismas tipografías (Sora / Inter / IBM Plex Mono,
+cargadas en `App.js`), `GlowCard` (spotlight-card de la web, el brillo sigue al dedo), `GradientText`
+(`text-gradient-*`), `AmbientBackground` (constelación), `Showcase3D` (el cubo del hero, proyectado a
+mano con SVG porque RN no tiene `preserve-3d`/`translateZ` en Android) y `CinematicFooter`. Un cambio
+visual en una página de `frontend/src/pages/` casi siempre tiene su par en `mobile/src/screens/`.
+Las sombras usan `boxShadow` (nueva arquitectura de RN) con la misma sintaxis que la web.
 
 ### Variables de entorno
 

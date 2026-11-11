@@ -241,14 +241,14 @@ export default function Landing() {
             <div className="hero-fade mt-9 flex flex-col items-center gap-4 sm:flex-row lg:justify-end">
               <Link
                 to="/explorar"
-                className="group inline-flex items-center gap-2 rounded-full bg-azure px-7 py-4 font-semibold text-mist shadow-[0_0_40px_-8px_rgba(30,107,255,0.9)] transition-all hover:scale-105 hover:bg-azureDeep active:scale-95"
+                className="group inline-flex items-center gap-2 rounded-full bg-azure px-7 py-4 font-semibold text-onAccent shadow-[0_0_40px_-8px_rgba(30,107,255,0.9)] transition-all hover:scale-105 hover:bg-azureDeep active:scale-95"
               >
                 Ver el catálogo
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
               </Link>
               <a
                 href="#vokter-ai"
-                className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-7 py-4 text-mist backdrop-blur transition-all hover:scale-105 hover:border-sky/40 hover:bg-white/10 active:scale-95"
+                className="inline-flex items-center gap-2 rounded-full border border-hairline/15 bg-hairline/5 px-7 py-4 text-mist backdrop-blur transition-all hover:scale-105 hover:border-sky/40 hover:bg-hairline/10 active:scale-95"
               >
                 Probar VOKTER AI
               </a>
@@ -267,7 +267,7 @@ export default function Landing() {
 
         <div className="hero-fade absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-3 font-mono text-xs uppercase tracking-[0.3em] text-steel/70" aria-hidden="true">
           Desliza
-          <span className="relative h-12 w-px overflow-hidden bg-white/10">
+          <span className="relative h-12 w-px overflow-hidden bg-hairline/10">
             <span className="absolute inset-x-0 top-0 h-1/2 animate-[scroll-cue_1.8s_ease-in-out_infinite] bg-sky" />
           </span>
         </div>
@@ -329,7 +329,7 @@ export default function Landing() {
               className={`category-card group flex min-h-[220px] flex-col justify-between p-7 ${span}`}
             >
               <div className="relative flex items-start justify-between">
-                <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 text-sky ring-1 ring-white/10 transition-colors group-hover:bg-azure group-hover:text-mist">
+                <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-hairline/5 text-sky ring-1 ring-hairline/10 transition-colors group-hover:bg-azure group-hover:text-onAccent">
                   <Icon className="h-7 w-7" aria-hidden="true" />
                 </span>
                 <ArrowUpRight className="h-6 w-6 text-steel transition-all group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-sky" aria-hidden="true" />
@@ -360,7 +360,7 @@ export default function Landing() {
           </div>
 
           <div className="steps-list relative">
-            <div className="absolute bottom-0 left-[1.6rem] top-0 hidden w-px bg-white/10 sm:block" aria-hidden="true">
+            <div className="absolute bottom-0 left-[1.6rem] top-0 hidden w-px bg-hairline/10 sm:block" aria-hidden="true">
               <div className="steps-progress h-full w-full origin-top bg-gradient-to-b from-azure to-sky" />
             </div>
             <ol className="flex flex-col gap-8">
@@ -387,7 +387,7 @@ export default function Landing() {
 
       {/* 6. App móvil */}
       <section className="app-section mx-auto max-w-6xl overflow-hidden px-6 py-32">
-        <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-surface2 via-surface to-ink">
+        <div className="relative overflow-hidden rounded-[2.5rem] border border-hairline/10 bg-gradient-to-br from-surface2 via-surface to-ink">
           <div aria-hidden="true" className="pointer-events-none absolute -right-32 -top-32 h-96 w-96 rounded-full bg-azure/25 blur-[100px]" />
           <div className="grid items-center gap-10 p-10 sm:p-16 lg:grid-cols-2">
             <div className="section-heading relative">
@@ -402,7 +402,7 @@ export default function Landing() {
               <div className="mt-8">
                 <Link
                   to="/descarga"
-                  className="group inline-flex items-center gap-2 rounded-full bg-mist px-7 py-4 font-semibold text-ink transition-all hover:scale-105 hover:bg-white active:scale-95"
+                  className="group inline-flex items-center gap-2 rounded-full bg-mist px-7 py-4 font-semibold text-ink transition-all hover:scale-105 hover:bg-mist/90 active:scale-95"
                 >
                   <Smartphone className="h-5 w-5" aria-hidden="true" />
                   Descargar app
@@ -411,24 +411,24 @@ export default function Landing() {
             </div>
 
             <div className="relative flex h-[420px] justify-center" aria-hidden="true">
-              <div className="phone relative h-[420px] w-[210px] rounded-[2.5rem] border border-white/15 bg-ink p-3 shadow-[0_40px_80px_-20px_rgba(0,0,0,0.9)]">
+              <div className="phone relative h-[420px] w-[210px] rounded-[2.5rem] border border-hairline/15 bg-ink p-3 shadow-[0_40px_80px_-20px_rgba(0,0,0,0.9)]">
                 <div className="mx-auto mb-4 h-5 w-20 rounded-full bg-surface2" />
                 <div className="space-y-3 px-1">
-                  <div className="h-3 w-24 rounded-full bg-white/20" />
-                  <div className="h-9 rounded-full border border-white/10 bg-surface2" />
+                  <div className="h-3 w-24 rounded-full bg-hairline/20" />
+                  <div className="h-9 rounded-full border border-hairline/10 bg-surface2" />
                   {[92, 78, 64].map((score) => (
-                    <div key={score} className="rounded-2xl border border-white/10 bg-surface p-3">
+                    <div key={score} className="rounded-2xl border border-hairline/10 bg-surface p-3">
                       <div className="flex items-center justify-between">
-                        <div className="h-2.5 w-16 rounded-full bg-white/25" />
+                        <div className="h-2.5 w-16 rounded-full bg-hairline/25" />
                         <span className="rounded-full bg-sky/15 px-2 py-0.5 font-mono text-[9px] text-sky">{score}%</span>
                       </div>
-                      <div className="mt-2 h-2 w-full rounded-full bg-white/10" />
-                      <div className="mt-1.5 h-2 w-2/3 rounded-full bg-white/10" />
+                      <div className="mt-2 h-2 w-full rounded-full bg-hairline/10" />
+                      <div className="mt-1.5 h-2 w-2/3 rounded-full bg-hairline/10" />
                     </div>
                   ))}
                 </div>
               </div>
-              <div className="float-chip absolute left-0 top-16 rounded-2xl border border-white/10 bg-surface2/90 px-4 py-3 text-xs text-mist shadow-xl backdrop-blur sm:left-6">
+              <div className="float-chip absolute left-0 top-16 rounded-2xl border border-hairline/10 bg-surface2/90 px-4 py-3 text-xs text-mist shadow-xl backdrop-blur sm:left-6">
                 <span className="text-sky">★</span> Favoritos sincronizados
               </div>
               <div className="float-chip absolute bottom-20 right-0 rounded-2xl border border-sky/30 bg-sky/15 px-4 py-3 font-mono text-xs text-sky shadow-xl backdrop-blur sm:right-6">

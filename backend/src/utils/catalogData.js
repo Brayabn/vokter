@@ -140,19 +140,26 @@ const TRACKSUITS = [
 ];
 
 // [título, precio, tallas, colores, público]
+// [título, precio, tallas, colores, público, foto, exacta]
+// `exacta: true` = la foto es del modelo concreto (HOKA y Under Armour, bajadas
+// de la tienda oficial). El resto son fotos ILUSTRATIVAS de calzado del mismo
+// estilo: los sitios de Louis Vuitton y Valentino bloquean la descarga, así que
+// se usa una imagen representativa y el catálogo lo advierte (ver `isStock`).
+const shoeImg = (name) => `/api/media/catalogo/calzado/${name}.jpg`;
+
 const SHOES = [
-  ['HOKA Clifton 10', 240000, '36-44', 'azul, negro, blanco, verde', 'unisex'],
-  ['HOKA Bondi 9', 270000, '36-44', 'blanco, negro, azul', 'unisex'],
-  ['HOKA Skyflow', 270000, '37-44', 'blanco, negro, azul', 'unisex'],
-  ['HOKA Gaviota', 260000, '36-44', 'blanco, negro, azul', 'unisex'],
-  ['LV Skate Sneakers', 270000, '35-43', 'blanco, negro, rojo, azul, plateado', 'unisex'],
-  ['LV Trainer', 180000, '35-44', 'blanco, negro, azul, verde, rojo', 'unisex'],
-  ['Archlight Trainer', 270000, '36-40', 'blanco, negro', 'dama'],
-  ['Under Armour Micro Valsetz', 230000, '36-44', 'negro, café, verde, gris', 'unisex'],
-  ['Mocasín Skechers', 210000, '37-44', 'café, gris, negro, moca', 'hombre'],
-  ['Valentino Garavani Diamante', 170000, '36-43', 'blanco, negro', 'unisex'],
-  ['Valentino Garavani Open Sneaker', 190000, '36-40', 'blanco', 'dama'],
-  ['Valentino Garavani VL7N Band', 210000, '37-43', 'blanco, negro', 'unisex'],
+  ['HOKA Clifton 10', 240000, '36-44', 'azul, negro, blanco, verde', 'unisex', shoeImg('hoka-clifton-10'), true],
+  ['HOKA Bondi 9', 270000, '36-44', 'blanco, negro, azul', 'unisex', shoeImg('hoka-bondi-9'), true],
+  ['HOKA Skyflow', 270000, '37-44', 'blanco, negro, azul', 'unisex', shoeImg('hoka-skyflow'), true],
+  ['HOKA Gaviota', 260000, '36-44', 'blanco, negro, azul', 'unisex', shoeImg('hoka-gaviota'), true],
+  ['LV Skate Sneakers', 270000, '35-43', 'blanco, negro, rojo, azul, plateado', 'unisex', shoeImg('lv-skate-sneakers'), false],
+  ['LV Trainer', 180000, '35-44', 'blanco, negro, azul, verde, rojo', 'unisex', shoeImg('lv-trainer'), false],
+  ['Archlight Trainer', 270000, '36-40', 'blanco, negro', 'dama', shoeImg('archlight-trainer'), false],
+  ['Under Armour Micro Valsetz', 230000, '36-44', 'negro, café, verde, gris', 'unisex', shoeImg('ua-valsetz'), true],
+  ['Mocasín Skechers', 210000, '37-44', 'café, gris, negro, moca', 'hombre', shoeImg('mocasin-skechers'), false],
+  ['Valentino Garavani Diamante', 170000, '36-43', 'blanco, negro', 'unisex', shoeImg('valentino-diamante'), false],
+  ['Valentino Garavani Open Sneaker', 190000, '36-40', 'blanco', 'dama', shoeImg('valentino-open'), false],
+  ['Valentino Garavani VL7N Band', 210000, '37-43', 'blanco, negro', 'unisex', shoeImg('valentino-vl7n'), false],
 ];
 
 const CATALOG_CONTENTS = [
@@ -173,11 +180,11 @@ const CATALOG_CONTENTS = [
     tags: `conjunto,sudadera,chaqueta,pantalon,deporte,ropa,${audience}`,
     categorySlug: 'deporte', imageUrl: img(n), rating: 4.5, authorEmail: SPORT,
   })),
-  ...SHOES.map(([title, price, sizes, colors, audience]) => ({
+  ...SHOES.map(([title, price, sizes, colors, audience, imageUrl, exacta]) => ({
     title, price,
     description: `Tenis ${audience}. Tallas ${sizes}. Colores: ${colors}.`,
     tags: `tenis,zapatillas,calzado,sneakers,${audience}`,
-    categorySlug: 'calzado', imageUrl: '', rating: 4.6, authorEmail: SHOE_STORE,
+    categorySlug: 'calzado', imageUrl, isStock: !exacta, rating: 4.6, authorEmail: SHOE_STORE,
   })),
 ];
 

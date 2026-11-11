@@ -61,8 +61,9 @@ export function GlowCard({
     '--spread': spread,
     '--radius': '20',
     '--border': '1.5',
-    '--backdrop': 'hsl(218 55% 5% / 0.74)',
-    '--backup-border': 'hsl(214 40% 22% / 0.9)',
+    // Fondo y borde de la tarjeta: definidos en index.css porque cambian con el tema.
+    '--backdrop': 'var(--card-backdrop)',
+    '--backup-border': 'var(--card-border)',
     '--size': '220',
     '--outer': '1',
     '--border-size': 'calc(var(--border, 2) * 1px)',

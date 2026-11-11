@@ -1,54 +1,65 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet } from 'react-native';
+import { Heart, LayoutDashboard, LogOut } from 'lucide-react-native';
 import { useAuth } from '../context/AuthContext';
-import Aurora from '../components/Aurora';
-import { colors, hairline, radius, TAB_BAR_SPACE } from '../theme';
+import { goTo } from '../navigation/goTo';
+import Avatar from '../components/Avatar';
+import { Button } from '../components/Buttons';
+import GlowCard from '../components/GlowCard';
+import { Page } from '../components/Screen';
+import { PageHeader } from '../components/Typography';
+import { alpha, colors, fonts, radius } from '../theme';
 
-export default function ProfileScreen() {
+// Mi cuenta (solo en la app: en la web el nombre y "Salir" van en la barra superior).
+export default function ProfileScreen({ navigation }) {
   const { user, logout } = useAuth();
 
-  if (!user) return null;
+  function handleLogout() {
+    logout();
+    goTo(navigation, 'Inicio');
+  }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <Aurora />
-      <View style={styles.content}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{user.name.charAt(0).toUpperCase()}</Text>
-        </View>
-        <Text style={styles.name}>{user.name}</Text>
-        <Text style={styles.email}>{user.email}</Text>
-        <View style={styles.roleBadge}>
-          <Text style={styles.roleText}>{user.role === 'expert' ? 'Marca' : 'Comprador'}</Text>
-        </View>
+    <Page>
+      <PageHeader kicker="Tu cuenta" title="Hola," accent={user.name.split(' ')[0]} />
 
+      <GlowCard style={{ padding: 24 }}>
+        <View style={styles.identity}>
+          <Avatar name={user.name} size={64} />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.name} numberOfLines={2}>{user.name}</Text>
+            <Text style={styles.email} numberOfLines={1}>{user.email}</Text>
+            <View style={styles.roleBadge}>
+              <Text style={styles.roleText}>{user.role === 'expert' ? 'Marca' : 'Comprador'}</Text>
+            </View>
+          </View>
+        </View>
         {!!user.bio && <Text style={styles.bio}>{user.bio}</Text>}
+      </GlowCard>
 
-        <TouchableOpacity style={styles.logoutButton} onPress={logout}>
-          <Text style={styles.logoutText}>Cerrar sesión</Text>
-        </TouchableOpacity>
+      <View style={styles.actions}>
+        <Button label="Ir a mi panel" icon={LayoutDashboard} iconPosition="left" size="md" block onPress={() => goTo(navigation, 'Panel')} />
+        <Button label="Mis favoritos" variant="ghost" icon={Heart} iconPosition="left" size="md" block onPress={() => goTo(navigation, 'Favoritos')} />
+        <Button label="Salir" variant="ghost" icon={LogOut} iconPosition="left" size="md" block onPress={handleLogout} textColor={colors.steel} />
       </View>
-    </SafeAreaView>
+    </Page>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.ink },
-  content: { alignItems: 'center', padding: 24, paddingTop: 60, paddingBottom: TAB_BAR_SPACE },
-  avatar: {
-    width: 80, height: 80, borderRadius: 40, backgroundColor: colors.sky,
-    justifyContent: 'center', alignItems: 'center', marginBottom: 16,
-    borderWidth: 3, borderColor: 'rgba(30,107,255,0.45)',
-  },
-  avatarText: { fontSize: 32, fontWeight: '800', color: colors.ink },
-  name: { color: colors.mist, fontSize: 20, fontWeight: '700' },
-  email: { color: colors.steel, fontSize: 13, marginBottom: 12 },
+  identity: { flexDirection: 'row', alignItems: 'center', gap: 20 },
+  name: { fontFamily: fonts.display, color: colors.mist, fontSize: 20 },
+  email: { fontFamily: fonts.body, color: colors.steel, fontSize: 14, marginTop: 2 },
   roleBadge: {
-    backgroundColor: colors.surface, borderRadius: radius.pill, paddingHorizontal: 14, paddingVertical: 6,
-    marginBottom: 20, borderWidth: 1, borderColor: hairline,
+    alignSelf: 'flex-start',
+    marginTop: 10,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: alpha.sky30,
+    backgroundColor: alpha.sky15,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
   },
-  roleText: { color: colors.sky, fontSize: 12 },
-  bio: { color: colors.steel, fontSize: 13, textAlign: 'center', marginBottom: 24 },
-  logoutButton: { borderWidth: 1, borderColor: hairline, borderRadius: radius.pill, paddingHorizontal: 24, paddingVertical: 12, marginTop: 20 },
-  logoutText: { color: colors.mist, fontSize: 13 },
+  roleText: { fontFamily: fonts.mono, color: colors.sky, fontSize: 12 },
+  bio: { fontFamily: fonts.body, color: colors.steel, fontSize: 14, lineHeight: 22, marginTop: 20 },
+  actions: { gap: 12, marginTop: 32 },
 });

@@ -9,6 +9,11 @@
       content="Tienda multimarca de ropa, tecnología, calzado, accesorios, hogar y deporte. Describe lo que buscas y VOKTER AI te lleva a la marca que lo tiene."
     />
     <meta name="theme-color" content="#04070D" />
+    <!-- Aplica el tema guardado antes del primer pintado: sin esto, quien eligió
+         el claro vería un destello oscuro en cada carga. Va inline a propósito;
+         su hash está en la CSP de vercel.json y de nginx.conf, así que cualquier
+         cambio en esta línea obliga a recalcularlo. -->
+    <script>try{var t=localStorage.getItem('vokter_theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark')}catch(e){}</script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

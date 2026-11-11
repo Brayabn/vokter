@@ -47,24 +47,32 @@ sequenceDiagram
 
 ```mermaid
 flowchart TD
-  Splash["Splash nativo<br/>(se mantiene mientras se restaura la sesión)"] --> Tabs
-  subgraph Tabs["Pestañas"]
-    Inicio["Inicio<br/>VOKTER AI · categorías · marcas"]
-    Explorar["Explorar<br/>búsqueda con debounce · filtros"]
-    Expertos["Marcas<br/>filtro por categoría"]
-    Favoritos["Favoritos<br/>(solo con sesión)"]
-    Perfil["Perfil / Login"]
-  end
-  Inicio --> Detalle["Ficha de artículo"]
-  Explorar --> Detalle
+  Splash["Splash nativo<br/>(se mantiene mientras se restauran la sesión y las fuentes)"] --> Inicio
+  Inicio["Inicio = landing web<br/>vitrina 3D · VOKTER AI · categorías · cómo comprar"]
+  Menu["Menú de la barra superior<br/>(el Navbar de la web)"]
+  Inicio --- Menu
+  Menu --> Catalogo["Catálogo<br/>búsqueda con debounce · filtros"]
+  Menu --> Marcas["Marcas<br/>filtro por categoría"]
+  Menu --> Panel["Panel (con sesión)<br/>VOKTER AI · mejor valorados"]
+  Menu --> Favoritos["Favoritos (con sesión)"]
+  Menu --> Cuenta["Mi cuenta (con sesión)"]
+  Menu --> Login["Ingresar"]
+  Login <--> Registro["Crear cuenta"]
+  Login -- "ok" --> Panel
+  Catalogo --> Detalle["Ficha de artículo"]
+  Panel --> Detalle
   Favoritos --> Detalle
-  Inicio --> PerfilExperto["Página de marca"]
-  Expertos --> PerfilExperto
-  Detalle --> PerfilExperto
-  PerfilExperto --> Detalle
-  Detalle -- "sin sesión" --> Login["Login (modal)"]
-  Login <--> Registro["Registro (modal)"]
+  Inicio --> PerfilMarca["Página de marca"]
+  Marcas --> PerfilMarca
+  Detalle --> PerfilMarca
+  PerfilMarca --> Detalle
+  Detalle -- "sin sesión" --> Login
 ```
+
+La app replica el diseño de la web en un teléfono: misma barra superior con menú, mismas
+páginas y mismos componentes (GlowCard, VOKTER AI, tarjetas, estados). Las páginas del menú cuelgan
+siempre del inicio (`navigation/goTo.js`), así que "atrás" vuelve al inicio. Panel, Favoritos y Mi
+cuenta muestran el acceso en su lugar si no hay sesión, como `ProtectedRoute` en la web.
 
 Mismos endpoints que la web. La URL del API se fija al compilar con `EXPO_PUBLIC_API_URL`
 (perfil `preview` de `mobile/eas.json` → API pública HTTPS).
@@ -80,7 +88,7 @@ Mismos endpoints que la web. La URL del API se fija al compilar con `EXPO_PUBLIC
 ```mermaid
 flowchart LR
   EAS["EAS Build<br/>perfil preview → APK"] --> APK["vokter.apk<br/>verificado: API HTTPS,<br/>sin IPs privadas"]
-  APK --> REL["GitHub Release v1.0.0<br/>(asset público)"]
+  APK --> REL["GitHub Release v1.1.0<br/>(asset público)"]
   REL -- "URL del asset" --> ENV["VITE_APK_URL<br/>(variable de Vercel)"]
   ENV --> PAGE["/descarga"]
   PAGE --> BTN["Botón 'Descargar APK'"]

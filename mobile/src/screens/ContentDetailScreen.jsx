@@ -1,16 +1,27 @@
 import { useEffect, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, Image, StyleSheet, Pressable, useWindowDimensions } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { ArrowLeft, ArrowRight, Heart, ShoppingBag, Star, Store } from 'lucide-react-native';
 import api, { mediaUrl, formatPrice } from '../api/client';
 import { getErrorMessage } from '../api/errors';
 import { useAuth } from '../context/AuthContext';
 import { useApiRequest } from '../hooks/useApiRequest';
+import { goTo } from '../navigation/goTo';
+import Avatar from '../components/Avatar';
+import { Button, TextLink } from '../components/Buttons';
+import FadeInView from '../components/FadeInView';
+import GlowCard from '../components/GlowCard';
+import Halo from '../components/Halo';
+import { Page } from '../components/Screen';
 import { LoadingState, ErrorState } from '../components/StateViews';
-import { colors, hairline, radius } from '../theme';
+import { Kicker } from '../components/Typography';
+import { alpha, colors, fonts, glowSky, radius } from '../theme';
 
+// Ficha de un artículo (frontend/src/pages/ContentDetail.jsx): detalle, favorito y la marca.
 export default function ContentDetailScreen({ route, navigation }) {
   const { id } = route.params;
   const { user } = useAuth();
+  const { width } = useWindowDimensions();
   const { data: content, loading, error, reload } = useApiRequest(
     () => api.get(`/contents/${id}`).then((res) => res.data.content),
     [id]
@@ -25,21 +36,15 @@ export default function ContentDetailScreen({ route, navigation }) {
   useEffect(() => {
     if (!user) {
       setIsFavorite(false);
-      return;
+      return undefined;
     }
     let active = true;
     setFavReady(false);
     api.get('/favorites')
-      .then((res) => {
-        if (active) setIsFavorite(res.data.favorites.some((f) => f.id === Number(id)));
-      })
-      .catch(() => {
-        // Si falla, se asume "no favorito"; agregar/quitar son operaciones idempotentes.
-        if (active) setIsFavorite(false);
-      })
-      .finally(() => {
-        if (active) setFavReady(true);
-      });
+      .then((res) => active && setIsFavorite(res.data.favorites.some((f) => f.id === Number(id))))
+      // Si falla, se asume "no favorito"; agregar/quitar son operaciones idempotentes.
+      .catch(() => active && setIsFavorite(false))
+      .finally(() => active && setFavReady(true));
     return () => { active = false; };
   }, [user, id]);
 
@@ -65,55 +70,82 @@ export default function ContentDetailScreen({ route, navigation }) {
   }
 
   if (loading) {
-    return (
-      <SafeAreaView style={styles.container} edges={['bottom']}>
-        <LoadingState message="Cargando artículo..." />
-      </SafeAreaView>
-    );
+    return <Page footer={false}><LoadingState message="Cargando artículo..." /></Page>;
   }
 
   if (error) {
     return (
-      <SafeAreaView style={styles.container} edges={['bottom']}>
+      <Page footer={false}>
         <ErrorState message={error} onRetry={reload} />
-      </SafeAreaView>
+        <TextLink label="Volver al catálogo" icon={ArrowLeft} onPress={() => goTo(navigation, 'Catálogo')} style={{ alignSelf: 'center' }} />
+      </Page>
     );
   }
 
-  const favLabel = !user
-    ? '☆ Inicia sesión para guardar'
-    : isFavorite ? '★ En favoritos' : '☆ Guardar en favoritos';
-
   const tags = (content.tags || '').split(',').map((t) => t.trim()).filter(Boolean);
+  const image = mediaUrl(content.imageUrl);
+  const favBusy = user && (favSaving || !favReady);
+  const favLabel = !user
+    ? 'Inicia sesión para guardar'
+    : favBusy ? 'Guardando...' : isFavorite ? 'En favoritos' : 'Guardar en favoritos';
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.category}>{content.category?.icon} {content.category?.name}</Text>
+    <Page>
+      {/* Halo ambiental detrás de la cabecera */}
+      <Halo width={Math.min(width, 576)} height={288} stops={[[0, '#1E6BFF', 0.14], [1, '#1E6BFF', 0]]} style={{ top: -48, left: (width - Math.min(width, 576)) / 2 - 24 }} />
+
+      <FadeInView style={{ marginBottom: 32 }}>
+        <Kicker>{content.category?.icon} {content.category?.name}</Kicker>
         <Text style={styles.title}>{content.title}</Text>
         <Text style={styles.price}>{formatPrice(content.price)}</Text>
-        {!!mediaUrl(content.imageUrl) && (
-          <Image source={{ uri: mediaUrl(content.imageUrl) }} style={styles.image} resizeMode="contain" accessibilityLabel={content.title} />
+        {!!image && (
+          <>
+            <View style={styles.imageBox}>
+              <Image source={{ uri: image }} style={styles.image} resizeMode="contain" accessibilityLabel={content.title} />
+            </View>
+            {!!content.isStock && (
+              <Text style={styles.stockNote}>Imagen ilustrativa: puede variar respecto al producto real.</Text>
+            )}
+          </>
         )}
 
         <View style={styles.metaRow}>
-          <Text style={styles.rating}>★ {content.rating?.toFixed(1)}</Text>
-          <Text style={styles.author}>Marca {content.author?.name}</Text>
+          <View style={styles.meta}>
+            <Star size={16} color={colors.sky} fill={colors.sky} />
+            <Text style={styles.rating}>{content.rating?.toFixed(1)}</Text>
+          </View>
+          <View style={styles.meta}>
+            <Store size={16} color={colors.steel} />
+            <Text style={styles.brand}>Marca {content.author?.name}</Text>
+          </View>
         </View>
 
-        <TouchableOpacity
+        <Pressable
           onPress={toggleFavorite}
-          disabled={favSaving || (user && !favReady)}
-          style={[styles.favButton, isFavorite && styles.favButtonActive]}
+          disabled={!!favBusy}
+          accessibilityRole="button"
+          accessibilityState={{ selected: isFavorite, busy: !!favBusy }}
+          style={({ pressed }) => [
+            styles.favButton,
+            isFavorite && styles.favButtonActive,
+            pressed && !isFavorite && { borderColor: 'rgba(111,211,255,0.5)' },
+            favBusy && { opacity: 0.6 },
+          ]}
         >
-          {favSaving || (user && !favReady) ? (
-            <ActivityIndicator color={colors.sky} size="small" />
-          ) : (
-            <Text style={[styles.favText, isFavorite && styles.favTextActive]}>{favLabel}</Text>
-          )}
-        </TouchableOpacity>
+          <Heart size={16} color={isFavorite ? colors.sky : colors.mist} fill={isFavorite ? colors.sky : 'none'} />
+          <Text style={[styles.favText, isFavorite && { color: colors.sky }]}>{favLabel}</Text>
+        </Pressable>
         {!!favError && <Text style={styles.favError}>{favError}</Text>}
+      </FadeInView>
 
+      <LinearGradient
+        colors={['transparent', 'rgba(111,211,255,0.25)', 'transparent']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.divider}
+      />
+
+      <FadeInView delay={120}>
         <Text style={styles.description}>{content.description}</Text>
 
         {tags.length > 0 && (
@@ -127,51 +159,63 @@ export default function ContentDetailScreen({ route, navigation }) {
         )}
 
         {content.author && (
-          <View style={styles.authorCard}>
-            <Text style={styles.authorLabel}>LA MARCA</Text>
-            <Text style={styles.authorName}>Sobre {content.author.name}</Text>
-            <Text style={styles.authorBio}>{content.author.bio}</Text>
-            <TouchableOpacity
-              style={styles.profileButton}
-              onPress={() => navigation.navigate('ExpertProfile', { expert: content.author })}
-            >
-              <Text style={styles.profileText}>Ver todos sus artículos</Text>
-            </TouchableOpacity>
-            <Text style={styles.pendingNote}>La compra en línea estará disponible próximamente.</Text>
-          </View>
+          <GlowCard style={{ padding: 24 }}>
+            <View style={{ gap: 20 }}>
+              <Avatar name={content.author.name} size={56} />
+              <View>
+                <Kicker>La marca</Kicker>
+                <Text style={styles.authorName}>Sobre {content.author.name}</Text>
+                <Text style={styles.authorBio}>{content.author.bio}</Text>
+                <Button
+                  label="Ver todos sus artículos"
+                  size="md"
+                  icon={ArrowRight}
+                  onPress={() => navigation.navigate('ExpertProfile', { expert: content.author })}
+                />
+                <View style={styles.note}>
+                  <ShoppingBag size={14} color={colors.steel} />
+                  <Text style={styles.noteText}>La compra en línea estará disponible próximamente.</Text>
+                </View>
+              </View>
+            </View>
+          </GlowCard>
         )}
-      </ScrollView>
-    </SafeAreaView>
+      </FadeInView>
+    </Page>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.ink },
-  content: { padding: 20, paddingBottom: 40 },
-  category: { color: colors.sky, fontSize: 11, letterSpacing: 1.5, fontWeight: '700', marginBottom: 10 },
-  title: { color: colors.mist, fontSize: 26, fontWeight: '800', marginBottom: 16, lineHeight: 32 },
-  price: { color: colors.sky, fontSize: 22, fontWeight: '800', marginBottom: 14 },
-  image: { width: '100%', height: 340, borderRadius: radius.lg, backgroundColor: '#ffffff', marginBottom: 16 },
-  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' },
-  rating: { color: colors.sky, fontSize: 13 },
-  author: { color: colors.steel, fontSize: 13 },
+  title: { fontFamily: fonts.displayHeavy, color: colors.mist, fontSize: 36, lineHeight: 40, letterSpacing: -0.9, marginTop: 12, marginBottom: 24 },
+  price: { fontFamily: fonts.monoBold, color: colors.sky, fontSize: 24, marginBottom: 24 },
+  imageBox: { marginBottom: 32, borderRadius: radius.md, backgroundColor: '#FFFFFF', overflow: 'hidden', borderWidth: 1, borderColor: alpha.white10 },
+  image: { width: '100%', aspectRatio: 1 },
+  stockNote: { color: colors.steel, fontSize: 11, textAlign: 'center', marginTop: -8, marginBottom: 12 },
+  metaRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: 20, rowGap: 12, marginBottom: 16 },
+  meta: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  rating: { fontFamily: fonts.mono, color: colors.sky, fontSize: 14 },
+  brand: { fontFamily: fonts.body, color: colors.steel, fontSize: 14 },
   favButton: {
-    alignSelf: 'flex-start', minWidth: 170, alignItems: 'center',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 8,
+    borderWidth: 1,
+    borderColor: alpha.white15,
+    borderRadius: radius.pill,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
   },
-  favButtonActive: { borderColor: colors.sky, backgroundColor: 'rgba(111,211,255,0.14)' },
-  favText: { color: colors.steel, fontSize: 13 },
-  favTextActive: { color: colors.sky },
-  favError: { color: colors.danger, fontSize: 12, marginTop: 8 },
-  description: { color: colors.mist, fontSize: 15, lineHeight: 22, marginTop: 20, marginBottom: 24 },
-  tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 24 },
-  tagChip: { backgroundColor: colors.surface2, borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 4 },
-  tagText: { color: colors.steel, fontSize: 11 },
-  authorCard: { backgroundColor: colors.surface, borderRadius: radius.lg, padding: 16, borderWidth: 1, borderColor: hairline },
-  authorLabel: { color: colors.sky, fontSize: 10, letterSpacing: 2, fontWeight: '700', marginBottom: 6 },
-  authorName: { color: colors.mist, fontSize: 16, fontWeight: '700', marginBottom: 8 },
-  authorBio: { color: colors.steel, fontSize: 13, marginBottom: 14, lineHeight: 19 },
-  profileButton: { backgroundColor: colors.azure, borderRadius: radius.pill, paddingVertical: 12, alignItems: 'center' },
-  profileText: { color: colors.mist, fontWeight: '700' },
-  pendingNote: { color: colors.steel, fontSize: 11, textAlign: 'center', marginTop: 10 },
+  favButtonActive: { borderColor: colors.sky, backgroundColor: alpha.sky15, ...glowSky },
+  favText: { fontFamily: fonts.bodySemi, color: colors.mist, fontSize: 14 },
+  favError: { fontFamily: fonts.body, color: colors.danger, fontSize: 14, marginTop: 12 },
+  divider: { height: 1, marginBottom: 40 },
+  description: { fontFamily: fonts.body, color: 'rgba(242,248,255,0.9)', fontSize: 18, lineHeight: 29, marginBottom: 32 },
+  tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 48 },
+  tagChip: { backgroundColor: 'rgba(17,28,45,0.8)', borderWidth: 1, borderColor: alpha.white10, borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 6 },
+  tagText: { fontFamily: fonts.body, color: colors.steel, fontSize: 12 },
+  authorName: { fontFamily: fonts.display, color: colors.mist, fontSize: 20, marginTop: 4, marginBottom: 8 },
+  authorBio: { fontFamily: fonts.body, color: colors.steel, fontSize: 14, lineHeight: 22, marginBottom: 20 },
+  note: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 12 },
+  noteText: { fontFamily: fonts.body, color: colors.steel, fontSize: 12, flexShrink: 1 },
 });

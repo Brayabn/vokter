@@ -45,7 +45,7 @@ export default function ExpertProfile() {
       <Reveal as="header" className="flex flex-col sm:flex-row items-center sm:items-start gap-8 mb-12 text-center sm:text-left">
         <div className="relative shrink-0">
           <div aria-hidden="true" className="absolute -inset-3 rounded-full bg-azure/30 blur-2xl" />
-          <div className="relative h-28 w-28 rounded-full bg-azure ring-2 ring-sky/60 ring-offset-4 ring-offset-ink flex items-center justify-center font-display font-extrabold text-5xl text-mist shadow-[0_0_40px_-8px_rgba(30,107,255,0.9)]">
+          <div className="relative h-28 w-28 rounded-full bg-azure ring-2 ring-sky/60 ring-offset-4 ring-offset-ink flex items-center justify-center font-display font-extrabold text-5xl text-onAccent shadow-[0_0_40px_-8px_rgba(30,107,255,0.9)]">
             {expert.name.charAt(0).toUpperCase()}
           </div>
         </div>
@@ -62,7 +62,7 @@ export default function ExpertProfile() {
           {lines.length > 0 && (
             <div className="flex flex-wrap justify-center sm:justify-start gap-2 mt-5">
               {lines.map((s) => (
-                <span key={s} className="text-xs font-medium rounded-full bg-surface2/80 ring-1 ring-white/10 text-mist px-3 py-1.5">
+                <span key={s} className="text-xs font-medium rounded-full bg-surface2/80 ring-1 ring-hairline/10 text-mist px-3 py-1.5">
                   {s}
                 </span>
               ))}

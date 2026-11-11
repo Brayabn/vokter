@@ -8,6 +8,7 @@ const { sequelize } = require('../models');
  */
 const ADDITIVE_COLUMNS = [
   { table: 'contents', column: 'price', spec: { type: DataTypes.INTEGER, allowNull: true } },
+  { table: 'contents', column: 'isStock', spec: { type: DataTypes.BOOLEAN, defaultValue: false } },
 ];
 
 async function ensureSchema() {

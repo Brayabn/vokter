@@ -4,6 +4,7 @@ const { sequelize, User, Category, Content } = require('../models');
 const { ensureSchema } = require('./schema');
 const seedData = require('./seedData');
 const catalog = require('./catalogData');
+const { backfillLegacyImages } = require('./legacyImages');
 
 const { DEMO_PASSWORD, DEMO_USER } = seedData;
 const CATEGORIES = [...seedData.CATEGORIES, ...catalog.CATALOG_CATEGORIES];
@@ -15,9 +16,16 @@ const CONTENTS = [...seedData.CONTENTS, ...catalog.CATALOG_CONTENTS];
  * naturales (slug, email, título+autor), así que puede ejecutarse muchas veces
  * sin duplicar registros ni tocar los datos que ya existen (p. ej. usuarios
  * reales registrados o favoritos).
+ *
+ * Al final rellena también la foto de las fichas heredadas de bases anteriores
+ * (ver `legacyImages.js`), que no figuran en ningún archivo de siembra.
+ *
+ * REQUISITO: llamar siempre después de `sequelize.sync()` y `ensureSchema()`,
+ * porque escribe en la columna `contents.isStock`. Los dos puntos de entrada
+ * (server.js al arrancar y runCli() aquí abajo) respetan ese orden.
  */
 async function seedDemoData() {
-  const counts = { categories: 0, users: 0, contents: 0 };
+  const counts = { categories: 0, users: 0, contents: 0, images: 0 };
   let passwordHash = null; // se calcula solo si hay que crear usuarios
 
   const categoryBySlug = {};
@@ -40,12 +48,27 @@ async function seedDemoData() {
 
   for (const { categorySlug, authorEmail, ...data } of CONTENTS) {
     const authorId = userByEmail[authorEmail].id;
-    const [, created] = await Content.findOrCreate({
+    const [content, created] = await Content.findOrCreate({
       where: { title: data.title, authorId },
       defaults: { ...data, authorId, categoryId: categoryBySlug[categorySlug].id },
     });
-    if (created) counts.contents += 1;
+    if (created) {
+      counts.contents += 1;
+    } else if (data.imageUrl && !content.imageUrl) {
+      // findOrCreate no actualiza lo que ya existe, así que una foto añadida
+      // después al catálogo nunca llegaría a una base ya sembrada. Se rellena
+      // solo cuando el artículo no tiene ninguna: nunca se pisa una existente
+      // ni se toca ningún otro campo (precio, descripción, favoritos...).
+      await content.update({ imageUrl: data.imageUrl, isStock: Boolean(data.isStock) });
+      counts.images += 1;
+    }
   }
+
+  // Fichas heredadas de bases anteriores (no están en ningún archivo de
+  // siembra): se les rellena la foto buscándolas por título. En una base nueva
+  // no existen y esto no hace nada. Requiere ensureSchema() ya ejecutado.
+  const legacy = await backfillLegacyImages(Content);
+  counts.images += legacy.updated;
 
   return counts;
 }
