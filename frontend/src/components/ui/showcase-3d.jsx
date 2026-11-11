@@ -28,7 +28,7 @@ const FACES = [
 
 const CHIPS = [
   { text: '92% match', className: 'left-0 top-10 border-sky/40 bg-sky/10 text-sky' },
-  { text: '10 marcas · 18 artículos', className: 'right-0 top-28 border-white/15 bg-white/5 text-mist' },
+  { text: '10 marcas · 18 artículos', className: 'right-0 top-28 border-hairline/15 bg-hairline/5 text-mist' },
   { text: 'Favoritos sincronizados', className: 'bottom-12 left-4 border-azure/40 bg-azure/10 text-mist' },
 ];
 

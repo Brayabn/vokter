@@ -99,9 +99,14 @@ export default function ContentDetailScreen({ route, navigation }) {
         <Text style={styles.title}>{content.title}</Text>
         <Text style={styles.price}>{formatPrice(content.price)}</Text>
         {!!image && (
-          <View style={styles.imageBox}>
-            <Image source={{ uri: image }} style={styles.image} resizeMode="contain" accessibilityLabel={content.title} />
-          </View>
+          <>
+            <View style={styles.imageBox}>
+              <Image source={{ uri: image }} style={styles.image} resizeMode="contain" accessibilityLabel={content.title} />
+            </View>
+            {!!content.isStock && (
+              <Text style={styles.stockNote}>Imagen ilustrativa: puede variar respecto al producto real.</Text>
+            )}
+          </>
         )}
 
         <View style={styles.metaRow}>
@@ -185,6 +190,7 @@ const styles = StyleSheet.create({
   price: { fontFamily: fonts.monoBold, color: colors.sky, fontSize: 24, marginBottom: 24 },
   imageBox: { marginBottom: 32, borderRadius: radius.md, backgroundColor: '#FFFFFF', overflow: 'hidden', borderWidth: 1, borderColor: alpha.white10 },
   image: { width: '100%', aspectRatio: 1 },
+  stockNote: { color: colors.steel, fontSize: 11, textAlign: 'center', marginTop: -8, marginBottom: 12 },
   metaRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: 20, rowGap: 12, marginBottom: 16 },
   meta: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   rating: { fontFamily: fonts.mono, color: colors.sky, fontSize: 14 },

@@ -84,20 +84,8 @@ const STYLES = `
   color: var(--foreground);
 }
 
-.footer-giant-bg-text {
-  font-size: 26vw;
-  line-height: 0.75;
-  font-weight: 800;
-  letter-spacing: -0.05em;
-  color: transparent;
-  -webkit-text-stroke: 1px color-mix(in oklch, var(--foreground) 7%, transparent);
-  background: linear-gradient(180deg, color-mix(in oklch, var(--foreground) 12%, transparent) 0%, transparent 60%);
-  -webkit-background-clip: text;
-  background-clip: text;
-}
-
 .footer-text-glow {
-  background: linear-gradient(180deg, var(--foreground) 0%, color-mix(in oklch, var(--foreground) 45%, transparent) 100%);
+  background: linear-gradient(180deg, var(--foreground) 0%, color-mix(in oklch, var(--foreground) var(--text-fade-strong), transparent) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -192,24 +180,10 @@ export function CinematicFooter({
   brand = 'VØKTER',
 }) {
   const wrapperRef = useRef(null);
-  const giantTextRef = useRef(null);
   const headingRef = useRef(null);
   const linksRef = useRef(null);
 
   useMotion(wrapperRef, () => {
-    // Parallax del texto gigante de fondo
-    gsap.fromTo(
-      giantTextRef.current,
-      { y: '10vh', scale: 0.8, opacity: 0 },
-      {
-        y: '0vh',
-        scale: 1,
-        opacity: 1,
-        ease: 'power1.out',
-        scrollTrigger: { trigger: wrapperRef.current, start: 'top 80%', end: 'bottom bottom', scrub: 1 },
-      }
-    );
-
     // Revelado escalonado del contenido
     gsap.fromTo(
       [headingRef.current, linksRef.current],
@@ -243,13 +217,6 @@ export function CinematicFooter({
         <footer className="cinematic-footer-wrapper fixed bottom-0 left-0 flex h-svh w-full flex-col justify-between overflow-hidden bg-background text-foreground">
           <div className="footer-aurora animate-footer-breathe pointer-events-none absolute left-1/2 top-1/2 z-0 h-[60vh] w-[80vw] -translate-x-1/2 -translate-y-1/2 rounded-[50%] blur-[80px]" />
           <div className="footer-bg-grid pointer-events-none absolute inset-0 z-0" />
-
-          {/* Texto gigante de fondo (centrado con flex para que GSAP pueda animar su transform) */}
-          <div className="pointer-events-none absolute inset-x-0 -bottom-[5vh] z-0 flex select-none justify-center" aria-hidden="true">
-            <div ref={giantTextRef} className="footer-giant-bg-text font-display whitespace-nowrap">
-              {brand}
-            </div>
-          </div>
 
           {/* 1. Marquesina diagonal */}
           <div className="absolute left-0 top-12 z-10 w-full -rotate-2 scale-110 overflow-hidden border-y border-border/60 bg-background/60 py-4 shadow-2xl backdrop-blur-md" aria-hidden="true">

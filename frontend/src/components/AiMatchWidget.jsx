@@ -53,19 +53,19 @@ export default function AiMatchWidget({ variant = 'default' }) {
   }
 
   return (
-    <div className={variant === 'hero' ? '' : 'rounded-3xl bg-surface border border-white/10 p-6 sm:p-8'}>
+    <div className={variant === 'hero' ? '' : 'rounded-3xl bg-surface border border-hairline/10 p-6 sm:p-8'}>
       <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="¿Qué artículo estás buscando?"
           aria-label="Describe el artículo que buscas"
-          className="flex-1 rounded-full bg-ink/80 border border-white/15 px-6 py-4 text-mist placeholder:text-steel/70 focus:border-azure/60 focus:ring-4 focus:ring-azure/10 outline-none transition-all"
+          className="flex-1 rounded-full bg-ink/80 border border-hairline/15 px-6 py-4 text-mist placeholder:text-steel/70 focus:border-azure/60 focus:ring-4 focus:ring-azure/10 outline-none transition-all"
         />
         <button
           type="submit"
           disabled={loading}
-          className="group inline-flex items-center justify-center gap-2 rounded-full bg-azure text-mist font-semibold px-7 py-4 shadow-[0_0_30px_-10px_rgba(30,107,255,0.8)] hover:bg-azureDeep active:scale-95 transition-all disabled:opacity-60"
+          className="group inline-flex items-center justify-center gap-2 rounded-full bg-azure text-onAccent font-semibold px-7 py-4 shadow-[0_0_30px_-10px_rgba(30,107,255,0.8)] hover:bg-azureDeep active:scale-95 transition-all disabled:opacity-60"
         >
           {loading ? 'Interpretando...' : 'Buscar'}
           {!loading && <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />}
@@ -79,7 +79,7 @@ export default function AiMatchWidget({ variant = 'default' }) {
               key={ex}
               type="button"
               onClick={() => setQuery(ex)}
-              className="text-xs font-mono text-steel border border-white/15 bg-white/[0.03] rounded-full px-3 py-1.5 hover:border-azure/50 hover:text-mist transition-colors"
+              className="text-xs font-mono text-steel border border-hairline/15 bg-white/[0.03] rounded-full px-3 py-1.5 hover:border-azure/50 hover:text-mist transition-colors"
             >
               {ex}
             </button>

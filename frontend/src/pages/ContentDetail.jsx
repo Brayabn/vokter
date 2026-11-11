@@ -90,9 +90,16 @@ export default function ContentDetail() {
         </h1>
         <p className="font-mono text-2xl font-bold text-sky mb-6">{formatPrice(content.price)}</p>
         {mediaUrl(content.imageUrl) && (
-          <div className="mb-8 overflow-hidden rounded-2xl bg-white ring-1 ring-white/10">
-            <img src={mediaUrl(content.imageUrl)} alt={content.title} className="mx-auto max-h-[70vh] w-auto object-contain" />
-          </div>
+          <figure className="mb-8">
+            <div className="overflow-hidden rounded-2xl bg-white ring-1 ring-hairline/10">
+              <img src={mediaUrl(content.imageUrl)} alt={content.title} className="mx-auto max-h-[70vh] w-auto object-contain" />
+            </div>
+            {content.isStock && (
+              <figcaption className="mt-2 text-center text-xs text-steel/80">
+                Imagen ilustrativa: puede variar respecto al producto real.
+              </figcaption>
+            )}
+          </figure>
         )}
 
         <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
@@ -111,7 +118,7 @@ export default function ContentDetail() {
               className={`sm:ml-auto inline-flex items-center gap-2 text-sm font-semibold rounded-full px-5 py-2.5 border transition-colors disabled:opacity-60 ${
                 isFavorite
                   ? 'border-sky bg-sky/15 text-sky shadow-[0_0_30px_-12px_rgba(111,211,255,0.9)]'
-                  : 'border-white/15 text-mist hover:border-sky/50 hover:text-sky'
+                  : 'border-hairline/15 text-mist hover:border-sky/50 hover:text-sky'
               }`}
             >
               <Heart className={`h-4 w-4 ${isFavorite ? 'fill-current' : ''}`} aria-hidden="true" />
@@ -120,7 +127,7 @@ export default function ContentDetail() {
           ) : (
             <Link
               to="/login"
-              className="sm:ml-auto inline-flex items-center gap-2 text-sm font-semibold rounded-full px-5 py-2.5 border border-white/15 text-mist hover:border-sky/50 hover:text-sky transition-colors"
+              className="sm:ml-auto inline-flex items-center gap-2 text-sm font-semibold rounded-full px-5 py-2.5 border border-hairline/15 text-mist hover:border-sky/50 hover:text-sky transition-colors"
             >
               <Heart className="h-4 w-4" aria-hidden="true" />
               Inicia sesión para guardar
@@ -138,7 +145,7 @@ export default function ContentDetail() {
         {tags.length > 0 && (
           <ul className="flex flex-wrap gap-2 mb-12">
             {tags.map((t) => (
-              <li key={t} className="rounded-full bg-surface2/80 ring-1 ring-white/10 px-3 py-1.5 text-xs text-steel">
+              <li key={t} className="rounded-full bg-surface2/80 ring-1 ring-hairline/10 px-3 py-1.5 text-xs text-steel">
                 {t}
               </li>
             ))}
@@ -148,7 +155,7 @@ export default function ContentDetail() {
         {content.author && (
           <GlowCard customSize className="p-6 sm:p-8">
             <div className="relative flex flex-col sm:flex-row gap-5 sm:items-start">
-              <div className="h-14 w-14 shrink-0 rounded-full bg-azure ring-2 ring-sky/40 ring-offset-4 ring-offset-ink flex items-center justify-center font-display font-extrabold text-2xl text-mist shadow-[0_0_30px_-8px_rgba(30,107,255,0.9)]">
+              <div className="h-14 w-14 shrink-0 rounded-full bg-azure ring-2 ring-sky/40 ring-offset-4 ring-offset-ink flex items-center justify-center font-display font-extrabold text-2xl text-onAccent shadow-[0_0_30px_-8px_rgba(30,107,255,0.9)]">
                 {content.author.name?.charAt(0).toUpperCase()}
               </div>
               <div className="min-w-0">
@@ -157,7 +164,7 @@ export default function ContentDetail() {
                 <p className="text-sm text-steel leading-relaxed mb-5">{content.author.bio}</p>
                 <Link
                   to={`/experto/${content.author.id}`}
-                  className="group inline-flex items-center gap-2 rounded-full bg-azure text-mist font-semibold px-6 py-3 shadow-[0_0_30px_-10px_rgba(30,107,255,0.9)] hover:bg-azureDeep transition-colors"
+                  className="group inline-flex items-center gap-2 rounded-full bg-azure text-onAccent font-semibold px-6 py-3 shadow-[0_0_30px_-10px_rgba(30,107,255,0.9)] hover:bg-azureDeep transition-colors"
                 >
                   Ver todos sus artículos
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />

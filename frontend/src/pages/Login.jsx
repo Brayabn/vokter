@@ -6,7 +6,7 @@ import { GlowCard } from '@/components/ui/spotlight-card';
 import { Reveal } from '@/components/ui/reveal';
 
 const INPUT_CLASS =
-  'rounded-xl bg-ink/80 border border-white/15 px-4 py-3 text-mist placeholder:text-steel/70 focus:border-azure/60 focus:ring-4 focus:ring-azure/10 outline-none transition';
+  'rounded-xl bg-ink/80 border border-hairline/15 px-4 py-3 text-mist placeholder:text-steel/70 focus:border-azure/60 focus:ring-4 focus:ring-azure/10 outline-none transition';
 
 export default function Login() {
   const { login } = useAuth();
@@ -74,7 +74,7 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={loading}
-                className="rounded-full bg-azure text-mist font-semibold px-6 py-3 mt-2 shadow-[0_0_30px_-10px_rgba(30,107,255,0.8)] hover:bg-azureDeep transition-colors disabled:opacity-60"
+                className="rounded-full bg-azure text-onAccent font-semibold px-6 py-3 mt-2 shadow-[0_0_30px_-10px_rgba(30,107,255,0.8)] hover:bg-azureDeep transition-colors disabled:opacity-60"
               >
                 {loading ? 'Ingresando...' : 'Ingresar'}
               </button>
@@ -87,7 +87,7 @@ export default function Login() {
           </div>
         </GlowCard>
 
-        <div className="mt-6 flex items-start gap-3 rounded-xl bg-surface/60 border border-white/10 p-4">
+        <div className="mt-6 flex items-start gap-3 rounded-xl bg-surface/60 border border-hairline/10 p-4">
           <KeyRound aria-hidden="true" className="h-4 w-4 text-sky mt-0.5 shrink-0" />
           <div>
             <p className="text-xs font-mono text-steel mb-1">Cuenta demo</p>

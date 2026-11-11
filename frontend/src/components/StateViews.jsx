@@ -38,7 +38,7 @@ export function ErrorState({ message, onRetry }) {
 export function EmptyState({ message, actionLabel, actionTo }) {
   return (
     <div className="flex flex-col items-center gap-4 py-16 text-center">
-      <span className="flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-surface2/60">
+      <span className="flex h-14 w-14 items-center justify-center rounded-full border border-hairline/10 bg-surface2/60">
         <Inbox className="h-7 w-7 text-steel" aria-hidden="true" />
       </span>
       <p className="text-steel max-w-md">{message}</p>

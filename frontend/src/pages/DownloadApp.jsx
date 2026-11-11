@@ -30,7 +30,7 @@ export default function DownloadApp() {
           <Reveal>
             <p className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.3em] text-sky mb-5">
               <Smartphone aria-hidden="true" className="h-4 w-4" />
-              App Android · v{APK_VERSION}
+              App Android{APK_VERSION ? ` · v${APK_VERSION}` : ''}
             </p>
             <h1 className="font-display font-extrabold tracking-tight text-4xl sm:text-5xl text-mist mb-4">
               Lleva <span className="text-gradient-azure">VØKTER</span> contigo
@@ -48,11 +48,12 @@ export default function DownloadApp() {
               ))}
             </ul>
             <dl className="grid grid-cols-2 gap-4 max-w-sm text-sm">
-              <div className="rounded-xl bg-surface border border-white/10 p-4">
+              <div className="rounded-xl bg-surface border border-hairline/10 p-4">
                 <dt className="text-xs font-mono text-steel mb-1">Versión</dt>
-                <dd className="text-mist font-semibold">{APK_VERSION}</dd>
+                {/* Sin APK publicado no se anuncia número de versión (ver config/app.js) */}
+                <dd className="text-mist font-semibold">{APK_VERSION || 'Por publicar'}</dd>
               </div>
-              <div className="rounded-xl bg-surface border border-white/10 p-4">
+              <div className="rounded-xl bg-surface border border-hairline/10 p-4">
                 <dt className="text-xs font-mono text-steel mb-1">Compatibilidad</dt>
                 <dd className="text-mist font-semibold">{APK_MIN_ANDROID}</dd>
               </div>
@@ -70,7 +71,7 @@ export default function DownloadApp() {
                   <p className="text-sm text-steel text-center">Escanea con la cámara de tu Android</p>
                   <a
                     href={APK_URL}
-                    className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-azure text-mist font-semibold px-8 py-3.5 shadow-[0_0_30px_-10px_rgba(30,107,255,0.8)] hover:bg-azureDeep transition-colors"
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-azure text-onAccent font-semibold px-8 py-3.5 shadow-[0_0_30px_-10px_rgba(30,107,255,0.8)] hover:bg-azureDeep transition-colors"
                   >
                     <Download aria-hidden="true" className="h-4 w-4" />
                     Descargar APK
@@ -94,7 +95,7 @@ export default function DownloadApp() {
           </div>
         </div>
 
-        <section className="mt-20 border-t border-white/10 pt-12">
+        <section className="mt-20 border-t border-hairline/10 pt-12">
           <Reveal>
             <p className="font-mono text-xs uppercase tracking-[0.3em] text-sky mb-3">Paso a paso</p>
             <h2 className="font-display font-extrabold tracking-tight text-3xl sm:text-4xl text-mist mb-8">
@@ -103,7 +104,7 @@ export default function DownloadApp() {
           </Reveal>
           <Reveal as="ol" className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {STEPS.map((step, i) => (
-              <li key={step.title} className="rounded-2xl bg-surface border border-white/10 p-5">
+              <li key={step.title} className="rounded-2xl bg-surface border border-hairline/10 p-5">
                 <span className="block font-display font-extrabold text-5xl leading-none text-gradient-azure">
                   {String(i + 1).padStart(2, '0')}
                 </span>

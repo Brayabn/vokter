@@ -6,7 +6,7 @@ import { GlowCard } from '@/components/ui/spotlight-card';
 import { Reveal } from '@/components/ui/reveal';
 
 const INPUT_CLASS =
-  'rounded-xl bg-ink/80 border border-white/15 px-4 py-3 text-mist placeholder:text-steel/70 focus:border-azure/60 focus:ring-4 focus:ring-azure/10 outline-none transition';
+  'rounded-xl bg-ink/80 border border-hairline/15 px-4 py-3 text-mist placeholder:text-steel/70 focus:border-azure/60 focus:ring-4 focus:ring-azure/10 outline-none transition';
 
 export default function Register() {
   const { register } = useAuth();
@@ -63,7 +63,7 @@ export default function Register() {
                     className={`flex-1 flex flex-col items-center gap-1.5 rounded-xl border px-3 py-3 text-sm transition-colors ${
                       form.role === opt.value
                         ? 'border-azure bg-azure/10 text-sky'
-                        : 'border-white/15 text-steel hover:border-white/30'
+                        : 'border-hairline/15 text-steel hover:border-hairline/30'
                     }`}
                   >
                     <opt.Icon aria-hidden="true" className="h-4 w-4" />
@@ -129,7 +129,7 @@ export default function Register() {
               <button
                 type="submit"
                 disabled={loading}
-                className="rounded-full bg-azure text-mist font-semibold px-6 py-3 mt-2 shadow-[0_0_30px_-10px_rgba(30,107,255,0.8)] hover:bg-azureDeep transition-colors disabled:opacity-60"
+                className="rounded-full bg-azure text-onAccent font-semibold px-6 py-3 mt-2 shadow-[0_0_30px_-10px_rgba(30,107,255,0.8)] hover:bg-azureDeep transition-colors disabled:opacity-60"
               >
                 {loading ? 'Creando cuenta...' : 'Crear cuenta'}
               </button>

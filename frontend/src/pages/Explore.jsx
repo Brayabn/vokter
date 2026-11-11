@@ -51,6 +51,11 @@ export default function Explore() {
         <p className="mt-4 max-w-2xl text-steel text-lg">
           Ropa, tecnología, calzado, accesorios, hogar y deporte de las diez marcas de la tienda.
         </p>
+        {/* Aviso general: las tarjetas marcadas «Ilustrativa» usan una foto del
+            tipo de artículo, no de la referencia exacta. */}
+        <p className="mt-3 max-w-2xl text-xs text-steel/80">
+          Algunas imágenes son ilustrativas y pueden variar respecto al producto real.
+        </p>
       </Reveal>
 
       <form onSubmit={handleSearch} className="mb-6">
@@ -60,7 +65,7 @@ export default function Explore() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar una chaqueta, audífonos, una silla..."
-            className="w-full rounded-full bg-ink/80 border border-white/15 pl-12 pr-5 py-3.5 text-mist placeholder:text-steel/70 focus:border-azure/60 focus:ring-4 focus:ring-azure/10 outline-none transition"
+            className="w-full rounded-full bg-ink/80 border border-hairline/15 pl-12 pr-5 py-3.5 text-mist placeholder:text-steel/70 focus:border-azure/60 focus:ring-4 focus:ring-azure/10 outline-none transition"
           />
         </div>
       </form>
@@ -73,7 +78,7 @@ export default function Explore() {
             className={`text-sm rounded-full px-4 py-2 border transition-colors ${
               activeCategory === cat.slug
                 ? 'border-azure bg-azure/15 text-sky'
-                : 'border-white/10 text-steel hover:border-white/25 hover:text-mist'
+                : 'border-hairline/10 text-steel hover:border-hairline/25 hover:text-mist'
             }`}
           >
             {cat.icon} {cat.name}

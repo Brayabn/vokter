@@ -12,6 +12,12 @@ export default function ContentCard({ content, onPress, style }) {
       {!!image && (
         <View style={styles.imageBox}>
           <Image source={{ uri: image }} style={styles.image} resizeMode="contain" accessibilityLabel={content.title} />
+          {/* Marca discreta: la foto representa el tipo de artículo, no la referencia exacta */}
+          {!!content.isStock && (
+            <View style={styles.stockBadge}>
+              <Text style={styles.stockBadgeText}>ILUSTRATIVA</Text>
+            </View>
+          )}
         </View>
       )}
       <View style={styles.row}>
@@ -50,6 +56,12 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   image: { width: '100%', height: '100%' },
+  stockBadge: {
+    position: 'absolute', right: 6, bottom: 6,
+    borderRadius: radius.pill, paddingHorizontal: 8, paddingVertical: 2,
+    backgroundColor: 'rgba(4,7,13,0.7)',
+  },
+  stockBadgeText: { color: colors.mist, fontSize: 8, letterSpacing: 0.8 },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
   categoryChip: {
     backgroundColor: alpha.white5,

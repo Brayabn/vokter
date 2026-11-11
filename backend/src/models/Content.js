@@ -11,6 +11,9 @@ const Content = sequelize.define('Content', {
   imageUrl: { type: DataTypes.STRING, defaultValue: '' },
   // Precio en pesos colombianos (COP). null = precio a consultar.
   price: { type: DataTypes.INTEGER, allowNull: true, validate: { min: 0 } },
+  // true = la foto es ilustrativa (del mismo tipo de artículo, no de la
+  // referencia exacta). El catálogo lo señala de forma discreta en la tarjeta.
+  isStock: { type: DataTypes.BOOLEAN, defaultValue: false },
 }, {
   tableName: 'contents',
   timestamps: true,

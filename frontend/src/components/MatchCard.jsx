@@ -13,7 +13,7 @@ export default function MatchCard({ match }) {
         </span>
       </div>
       {/* Barra visual del porcentaje de coincidencia */}
-      <div className="relative h-1 w-full rounded-full bg-white/10" aria-hidden="true">
+      <div className="relative h-1 w-full rounded-full bg-hairline/10" aria-hidden="true">
         <div
           className="h-full rounded-full bg-gradient-to-r from-azure to-sky shadow-[0_0_12px_-2px_rgba(111,211,255,0.9)]"
           style={{ width: `${Math.min(match.matchScore, 100)}%` }}
@@ -27,7 +27,7 @@ export default function MatchCard({ match }) {
         </span>
         <Link
           to={`/experto/${match.id}`}
-          className="text-xs px-3 py-1.5 rounded-full border border-white/15 text-mist hover:border-sky/50 hover:text-sky transition-colors"
+          className="text-xs px-3 py-1.5 rounded-full border border-hairline/15 text-mist hover:border-sky/50 hover:text-sky transition-colors"
         >
           Ver la marca
         </Link>

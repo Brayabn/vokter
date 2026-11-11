@@ -2,17 +2,82 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Tokens en variables CSS (mismos valores que tailwind.config.js). Los usan los
-   componentes de components/ui que mezclan colores con color-mix(). */
+/* ---------------------------------------------------------------------------
+   Tokens de color. Única fuente de verdad de la paleta: tailwind.config.js solo
+   apunta aquí con rgb(var(--x) / <alpha-value>).
+
+   Se guardan como canales RGB sueltos ("30 107 255") y no como #hex, porque es
+   lo que permite que sigan funcionando los modificadores de opacidad de Tailwind
+   (bg-ink/80, text-steel/70). Debajo se derivan las mismas variables en forma de
+   color para los componentes de components/ui, que las mezclan con color-mix().
+
+   El tema oscuro vive en :root y es el de partida; el claro lo activa el atributo
+   data-theme="light" en <html>, que escribe ThemeContext.
+   --------------------------------------------------------------------------- */
 :root {
-  --background: #04070D;
-  --foreground: #F2F8FF;
-  --primary: #1E6BFF;
-  --secondary: #6FD3FF;
-  --destructive: #FF6B81;
-  --border: #18243A;
-  --muted-foreground: #8CA3C2;
+  --ink: 4 7 13;            /* fondo principal (casi negro) */
+  --surface: 9 15 25;       /* tarjetas */
+  --surface2: 17 28 45;     /* inputs y hover */
+  --azure: 30 107 255;      /* acento principal */
+  --azure-soft: 79 141 255;
+  --azure-deep: 11 76 214;  /* hover de botón azul */
+  --sky: 111 211 255;       /* acento secundario */
+  --sky-soft: 169 231 255;
+  --steel: 140 163 194;     /* texto secundario */
+  --mist: 242 248 255;      /* texto principal */
+  --danger: 255 107 129;
+  --line: 24 36 58;         /* bordes sólidos */
+  --hairline: 255 255 255;  /* tinta de bordes y veladuras translúcidas */
+  --on-accent: 255 255 255; /* texto sobre botones azules: blanco en ambos temas */
+
+  --glow-strong: 0.22;      /* intensidad de las auras y resplandores */
+  --glow-soft: 0.10;
+  /* Tarjetas de GlowCard (components/ui/spotlight-card.jsx) */
+  --text-fade: 55%;         /* desvanecido de .text-gradient-mist */
+  --text-fade-strong: 45%;  /* desvanecido del titular del footer */
+  --card-backdrop: hsl(218 55% 5% / 0.74);
+  --card-border: hsl(214 40% 22% / 0.9);
   color-scheme: dark;
+}
+
+/* Tema claro. No es el oscuro invertido: fondo azulado muy claro, tarjetas
+   blancas y acentos azules más saturados para que el texto siga legible sobre
+   blanco (el `sky` del tema oscuro no llega a 4.5:1 sobre fondo claro). */
+[data-theme='light'] {
+  --ink: 244 247 251;
+  --surface: 255 255 255;
+  --surface2: 234 240 248;
+  --azure: 37 99 235;
+  --azure-soft: 59 130 246;
+  --azure-deep: 29 78 216;
+  --sky: 29 78 216;
+  --sky-soft: 37 99 235;
+  --steel: 100 116 139;
+  --mist: 23 36 58;
+  --danger: 200 30 55;
+  --line: 220 228 239;
+  --hairline: 23 36 58;
+  --on-accent: 255 255 255;
+
+  --glow-strong: 0.12;
+  --glow-soft: 0.05;
+  /* Sobre fondo claro el mismo desvanecido deja el titular gris lavado */
+  --text-fade: 82%;
+  --text-fade-strong: 78%;
+  --card-backdrop: rgb(255 255 255 / 0.92);
+  --card-border: rgb(var(--line) / 0.9);
+  color-scheme: light;
+}
+
+/* Mismos tokens en forma de color, para color-mix() en components/ui */
+:root {
+  --background: rgb(var(--ink));
+  --foreground: rgb(var(--mist));
+  --primary: rgb(var(--azure));
+  --secondary: rgb(var(--sky));
+  --destructive: rgb(var(--danger));
+  --border: rgb(var(--line));
+  --muted-foreground: rgb(var(--steel));
 }
 
 html {
@@ -22,7 +87,10 @@ html {
 body {
   -webkit-font-smoothing: antialiased;
   background: var(--background);
+  color: var(--foreground);
   overflow-x: hidden;
+  /* Transición suave al cambiar de tema, sin afectar al resto de animaciones */
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 ::selection {
@@ -32,20 +100,20 @@ body {
 
 /* Foco de teclado visible en toda la app, en vez del outline por defecto del navegador */
 :focus-visible {
-  outline: 2px solid #6FD3FF;
+  outline: 2px solid var(--secondary);
   outline-offset: 2px;
 }
 
 /* Texto con degradado azul para titulares */
 .text-gradient-azure {
-  background: linear-gradient(100deg, #A9E7FF 0%, #6FD3FF 40%, #1E6BFF 100%);
+  background: linear-gradient(100deg, rgb(var(--sky-soft)) 0%, rgb(var(--sky)) 40%, rgb(var(--azure)) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
 .text-gradient-mist {
-  background: linear-gradient(180deg, #FFFFFF 0%, color-mix(in oklch, #F2F8FF 55%, transparent) 100%);
+  background: linear-gradient(180deg, rgb(var(--mist)) 0%, color-mix(in oklch, rgb(var(--mist)) var(--text-fade), transparent) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;

@@ -9,13 +9,35 @@ export default function ContentCard({ content }) {
   const image = mediaUrl(content.imageUrl);
   return (
     <GlowCard as={Link} to={`/contenido/${content.id}`} customSize className="group flex h-full flex-col p-6">
-      {image && (
-        <div className="relative -mx-2 -mt-2 mb-4 aspect-[4/3] overflow-hidden rounded-xl bg-white">
-          <img src={image} alt={content.title} loading="lazy" className="h-full w-full object-contain" />
-        </div>
-      )}
+      {/* El bloque de imagen ocupa el mismo alto haya foto o no: si unas tarjetas
+          lo omitieran, la fila del grid se desalinearía y quedarían huecos. */}
+      <div className="relative -mx-2 -mt-2 mb-4 aspect-[4/3] overflow-hidden rounded-xl">
+        {image ? (
+          <>
+            {/* object-contain y no cover: las fotos del catálogo real son capturas
+                verticales y recortarlas cortaría el producto. Las ilustrativas ya
+                vienen en 4:3, así que llenan la caja igual. */}
+            <img src={image} alt={content.title} loading="lazy" className="h-full w-full bg-white object-contain" />
+            {/* Marca discreta: la foto representa el tipo de artículo, no la referencia exacta */}
+            {content.isStock && (
+              <span className="pointer-events-none absolute bottom-1.5 right-1.5 rounded-full bg-ink/70 px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider text-mist/80 backdrop-blur-sm">
+                Ilustrativa
+              </span>
+            )}
+          </>
+        ) : (
+          <div
+            className="flex h-full w-full flex-col items-center justify-center gap-1.5 bg-hairline/5 ring-1 ring-inset ring-hairline/10"
+            role="img"
+            aria-label={`${content.title}: fotografía pendiente`}
+          >
+            <span className="text-2xl opacity-70" aria-hidden="true">{content.category?.icon || '📦'}</span>
+            <span className="font-mono text-[10px] uppercase tracking-widest text-steel">Foto próximamente</span>
+          </div>
+        )}
+      </div>
       <div className="relative flex items-center justify-between mb-4">
-        <span className="text-xs font-mono text-steel rounded-full bg-white/5 ring-1 ring-white/10 px-2.5 py-1">
+        <span className="text-xs font-mono text-steel rounded-full bg-hairline/5 ring-1 ring-hairline/10 px-2.5 py-1">
           {content.category?.icon} {content.category?.name}
         </span>
         <span className="inline-flex items-center gap-1 text-xs font-mono text-sky">
