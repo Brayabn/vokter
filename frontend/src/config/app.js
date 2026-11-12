@@ -1,17 +1,28 @@
 // Configuración pública de la web (Vite incrusta las variables VITE_* al compilar).
 
-// URL pública del APK (GitHub Release). La usan el botón Y el QR de /descarga:
-// una única fuente para que nunca apunten a sitios distintos.
-const rawApkUrl = (import.meta.env.VITE_APK_URL || '').trim();
+/**
+ * URL pública del APK, en la release de GitHub. La usan el botón Y el QR de
+ * /descarga: una única fuente, para que no puedan apuntar a sitios distintos.
+ *
+ * Vive en el repositorio y no en una variable de entorno a propósito. El enlace
+ * de una release es público y estable, así que tenerlo aquí lo deja versionado
+ * junto al código y revisable en el diff. Cuando dependía de `VITE_APK_URL` en
+ * el panel de Vercel se quedó atrás respecto a la versión publicada y la página
+ * llegó a ofrecer un APK que no correspondía.
+ *
+ * `VITE_APK_URL` sigue admitiéndose como sustitución puntual para entornos de
+ * prueba; en producción no hace falta definirla.
+ */
+const APK_RELEASE_URL = 'https://github.com/Brayabn/vokter/releases/download/v1.2.0/VOKTER-v1.2.0.apk';
+
+const rawApkUrl = (import.meta.env.VITE_APK_URL || '').trim() || APK_RELEASE_URL;
 
 // Solo se acepta una URL HTTPS: un QR hacia localhost o una IP privada no le sirve a nadie.
 export const APK_URL = /^https:\/\//i.test(rawApkUrl) ? rawApkUrl : null;
 
 // La versión que se anuncia se DEDUCE de la URL del release, que lleva la
-// etiqueta en la ruta (.../releases/download/v1.0.0/...). Así la página no puede
-// anunciar una versión distinta del archivo que de verdad entrega: antes
-// VITE_APK_VERSION era independiente de VITE_APK_URL y podía quedarse
-// desactualizada respecto al release publicado.
+// etiqueta en la ruta (.../releases/download/v1.2.0/...). Así la página no puede
+// anunciar una versión distinta del archivo que de verdad entrega.
 const versionEnLaUrl = (APK_URL || '').match(/\/download\/v?([\d][\w.-]*)\//);
 const versionDeclarada = (import.meta.env.VITE_APK_VERSION || '').trim();
 

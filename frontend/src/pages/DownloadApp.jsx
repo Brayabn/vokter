@@ -8,29 +8,29 @@ const STEPS = [
   { title: 'Descarga el APK', text: 'Toca "Descargar aplicación" desde el teléfono, o escanea el código con la cámara de tu Android.' },
   { title: 'Permite la instalación', text: 'Android pedirá autorizar la instalación desde el navegador ("orígenes desconocidos"). Es normal en apps fuera de Play Store.' },
   { title: 'Instala y abre', text: 'Si Play Protect muestra un aviso, elige "Instalar de todas formas". Luego abre VØKTER.' },
-  { title: 'Ingresa', text: 'Usa tu misma cuenta de la web o la cuenta demo: demo@vokter.com — vokter123.' },
+  { title: 'Ingresa', text: 'Usa tu cuenta VOKTER, la misma de la web, o la cuenta demo: demo@vokter.com — vokter123.' },
 ];
 
 const FEATURES = [
-  'VOKTER AI: describe lo que buscas y encuentra la marca que lo vende',
-  'Recorre el catálogo y las marcas por categoría',
-  'Favoritos sincronizados con tu cuenta web',
+  'Ligas y competiciones, con los partidos de cada una',
+  'Marcadores y estado de cada encuentro: programado, en vivo o finalizado',
+  'Mercados deportivos y cuotas informativas',
 ];
 
-// Las dos superficies de VØKTER. Misma marca, misma cuenta y mismo catálogo:
-// cambia el formato, no el producto.
+// Las dos superficies de VØKTER. Comparten marca y cuenta, pero cada una tiene
+// su propio contenido: la web es la tienda y la app, la consulta deportiva.
 const PLATFORMS = [
   {
     icon: Globe,
     name: 'Versión web',
     tag: 'Cualquier navegador',
-    points: ['Catálogo completo de las diez marcas', 'VOKTER AI y búsqueda por categoría', 'Tema claro y oscuro'],
+    points: ['Catálogo multimarca de la tienda', 'VOKTER AI y búsqueda por categoría', 'Tema claro y oscuro'],
   },
   {
     icon: Smartphone,
     name: 'App Android',
     tag: 'React Native',
-    points: ['El mismo catálogo, hecho para el móvil', 'Sesión guardada de forma cifrada en el teléfono', 'Favoritos compartidos con la web'],
+    points: ['Ligas, partidos y marcadores', 'Mercados deportivos con cuotas informativas', 'Sesión guardada de forma cifrada en el teléfono'],
   },
 ];
 
@@ -79,9 +79,9 @@ export default function DownloadApp() {
               Lleva <span className="text-gradient-azure">VØKTER</span> contigo
             </h1>
             <p className="text-steel text-lg mb-8 max-w-md">
-              La app Android es la misma tienda que estás viendo, hecha para el teléfono: el catálogo de las
-              diez marcas, VOKTER AI y tus favoritos, con la misma cuenta. Lo que guardes en un lugar te
-              espera en el otro.
+              La app Android de VØKTER es tu panel deportivo: competiciones, partidos con su marcador y
+              su estado en tiempo real, y los mercados de cada encuentro con sus cuotas. Entras con tu
+              cuenta VOKTER, la misma de la web.
             </p>
             <ul className="flex flex-col gap-3 mb-8">
               {FEATURES.map((f) => (
@@ -160,11 +160,11 @@ export default function DownloadApp() {
           <Reveal>
             <p className="font-mono text-xs uppercase tracking-[0.3em] text-sky mb-3">Una sola solución</p>
             <h2 className="font-display font-extrabold tracking-tight text-3xl sm:text-4xl text-mist mb-4">
-              Dos formas de usar VØKTER
+              Una cuenta, dos experiencias
             </h2>
             <p className="text-steel max-w-2xl mb-8">
-              La web y la aplicación comparten marca, catálogo y cuenta. No son dos productos: son la misma
-              tienda adaptada a cada pantalla.
+              La web y la aplicación comparten marca y cuenta: entras una vez y te sirve en las dos. Cada
+              una está hecha para lo suyo: la web es la tienda multimarca y la app, la consulta deportiva.
             </p>
           </Reveal>
 
@@ -213,6 +213,12 @@ export default function DownloadApp() {
           <p className="text-xs text-steel mt-6">
             ¿Usas iPhone? Por ahora VØKTER móvil está disponible solo para Android; puedes usar la versión web
             desde el navegador.
+          </p>
+          {/* Los datos deportivos de la app son de demostración y no hay dinero de
+              por medio: conviene decirlo también antes de descargarla. */}
+          <p className="text-xs text-steel/80 mt-3">
+            Los marcadores y las cuotas de la aplicación son datos de demostración y no corresponden a
+            encuentros reales. VØKTER no acepta apuestas, depósitos ni retiros.
           </p>
         </section>
       </div>
