@@ -7,6 +7,7 @@ const rateLimit = require('express-rate-limit');
 
 const { sequelize } = require('./models');
 const { seedDemoData } = require('./utils/seed');
+const { seedSportsData } = require('./utils/seedSports');
 const { ensureSchema } = require('./utils/schema');
 const authRoutes = require('./routes/authRoutes');
 const contentRoutes = require('./routes/contentRoutes');
@@ -14,6 +15,7 @@ const categoryRoutes = require('./routes/categoryRoutes');
 const favoriteRoutes = require('./routes/favoriteRoutes');
 const aiRoutes = require('./routes/aiRoutes');
 const expertRoutes = require('./routes/expertRoutes');
+const sportsRoutes = require('./routes/sportsRoutes');
 
 const app = express();
 
@@ -81,6 +83,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/favorites', favoriteRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/experts', expertRoutes);
+app.use('/api/sports', sportsRoutes);
 
 // Rutas inexistentes: JSON en vez de la página HTML por defecto de Express.
 app.use((req, res) => res.status(404).json({ error: 'Recurso no encontrado.' }));
@@ -107,6 +110,9 @@ async function start() {
     if (config.seedDemoData) {
       const created = await seedDemoData();
       console.log('🌱 Datos demo verificados. Nuevos registros:', created);
+      // Módulo deportivo: tablas propias, no toca catálogo ni usuarios.
+      const deporte = await seedSportsData();
+      console.log('⚽ Datos deportivos (DEMOSTRACIÓN) verificados:', deporte);
     }
 
     const server = app.listen(config.port, () => {
