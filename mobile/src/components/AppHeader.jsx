@@ -26,17 +26,14 @@ export default function AppHeader({ overlay = false, scrollY }) {
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
 
+  // Secciones de la app deportiva. Deben coincidir con las pestañas registradas
+  // en navigation/RootNavigator.jsx: navegar a un nombre que no exista rompe.
   const links = [
     { name: 'Inicio', label: 'Inicio' },
-    { name: 'Catálogo', label: 'Catálogo' },
-    { name: 'Marcas', label: 'Marcas' },
-    ...(user
-      ? [
-          { name: 'Panel', label: 'Panel' },
-          { name: 'Favoritos', label: 'Favoritos' },
-          { name: 'Perfil', label: 'Mi cuenta' },
-        ]
-      : []),
+    { name: 'Partidos', label: 'Partidos' },
+    { name: 'Ligas', label: 'Ligas' },
+    { name: 'Mercados', label: 'Mercados' },
+    ...(user ? [{ name: 'Perfil', label: 'Mi cuenta' }] : []),
   ];
 
   function go(name) {

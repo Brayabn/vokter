@@ -1,22 +1,23 @@
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import * as SplashScreen from 'expo-splash-screen';
+import { CalendarDays, Home, Trophy, User, Target } from 'lucide-react-native';
 
 import { useAuth } from '../context/AuthContext';
-import { colors, hairline } from '../theme';
+import { alpha, colors, fonts } from '../theme';
 
-import HomeScreen from '../screens/HomeScreen';
-import ExploreScreen from '../screens/ExploreScreen';
-import ExpertsScreen from '../screens/ExpertsScreen';
-import DashboardScreen from '../screens/DashboardScreen';
-import FavoritesScreen from '../screens/FavoritesScreen';
+import SportsHomeScreen from '../screens/SportsHomeScreen';
+import MatchesScreen from '../screens/MatchesScreen';
+import LeaguesScreen from '../screens/LeaguesScreen';
+import MarketsScreen from '../screens/MarketsScreen';
+import MatchDetailScreen from '../screens/MatchDetailScreen';
 import ProfileScreen from '../screens/ProfileScreen';
-import ContentDetailScreen from '../screens/ContentDetailScreen';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
-import ExpertProfileScreen from '../screens/ExpertProfileScreen';
 
 const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
 
 const navTheme = {
   ...DefaultTheme,
@@ -26,8 +27,8 @@ const navTheme = {
     background: colors.ink,
     card: colors.ink,
     text: colors.mist,
-    border: hairline,
-    primary: colors.sky,
+    border: colors.border,
+    primary: colors.azure,
   },
 };
 
@@ -43,12 +44,67 @@ function protect(Component) {
   return Protected;
 }
 
-const ProtectedDashboard = protect(DashboardScreen);
-const ProtectedFavorites = protect(FavoritesScreen);
 const ProtectedProfile = protect(ProfileScreen);
 
-// Los nombres de las pantallas son también las claves de navegación: si cambian, hay que
-// actualizar los navigate('...') / goTo(navigation, '...') de las pantallas y el menú.
+const ICONOS = {
+  Inicio: Home,
+  Partidos: CalendarDays,
+  Ligas: Trophy,
+  Mercados: Target,
+  Perfil: User,
+};
+
+/**
+ * Barra inferior de pestañas: Inicio, Partidos, Ligas, Mercados y Perfil.
+ *
+ * Sustituye al menú desplegable del catálogo. En un teléfono una barra fija es
+ * más alcanzable con el pulgar y deja ver siempre dónde se está, que es lo que
+ * se espera de una app deportiva.
+ */
+function Tabs() {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => {
+        const Icono = ICONOS[route.name];
+        return {
+          headerShown: false,
+          tabBarActiveTintColor: colors.azure,
+          tabBarInactiveTintColor: colors.steel,
+          tabBarStyle: {
+            backgroundColor: colors.ink,
+            borderTopColor: colors.border,
+            borderTopWidth: 1,
+            // Altura cómoda y margen inferior para los gestos de Android.
+            height: 62,
+            paddingTop: 6,
+            paddingBottom: 8,
+          },
+          tabBarLabelStyle: { fontFamily: fonts.bodyMedium, fontSize: 11 },
+          tabBarIcon: ({ color, focused }) => (
+            <Icono size={21} color={color} strokeWidth={focused ? 2.4 : 1.9} />
+          ),
+        };
+      }}
+    >
+      <Tab.Screen name="Inicio" component={SportsHomeScreen} />
+      <Tab.Screen name="Partidos" component={MatchesScreen} />
+      <Tab.Screen name="Ligas" component={LeaguesScreen} />
+      <Tab.Screen name="Mercados" component={MarketsScreen} />
+      <Tab.Screen name="Perfil" component={ProtectedProfile} />
+    </Tab.Navigator>
+  );
+}
+
+/**
+ * Las pestañas viven dentro de un stack: así el detalle de un partido y las
+ * pantallas de acceso se abren encima, a pantalla completa, sin que la barra
+ * inferior estorbe.
+ *
+ * Las pantallas del catálogo (Explore, Experts, ContentDetail, Favorites,
+ * Dashboard, ExpertProfile) ya no se registran aquí: la app pasa a ser la
+ * experiencia deportiva y la tienda se queda en la web. Sus archivos se
+ * conservan en el repositorio para poder recuperarlas.
+ */
 export default function RootNavigator() {
   const { loading } = useAuth();
 
@@ -59,21 +115,16 @@ export default function RootNavigator() {
   return (
     <NavigationContainer theme={navTheme} onReady={() => SplashScreen.hideAsync()}>
       <Stack.Navigator
-        initialRouteName="Inicio"
-        // Cada pantalla dibuja su propia barra (components/AppHeader), como el Navbar de la web.
-        // fade_from_bottom: la misma entrada suave que PageTransition en la web.
-        screenOptions={{ headerShown: false, animation: 'fade_from_bottom', contentStyle: { backgroundColor: colors.ink } }}
+        screenOptions={{
+          headerShown: false,
+          animation: 'fade_from_bottom',
+          contentStyle: { backgroundColor: colors.ink },
+        }}
       >
-        <Stack.Screen name="Inicio" component={HomeScreen} />
-        <Stack.Screen name="Catálogo" component={ExploreScreen} />
-        <Stack.Screen name="Marcas" component={ExpertsScreen} />
-        <Stack.Screen name="Panel" component={ProtectedDashboard} />
-        <Stack.Screen name="Favoritos" component={ProtectedFavorites} />
-        <Stack.Screen name="Perfil" component={ProtectedProfile} />
+        <Stack.Screen name="Tabs" component={Tabs} />
+        <Stack.Screen name="MatchDetail" component={MatchDetailScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Register" component={RegisterScreen} />
-        <Stack.Screen name="ContentDetail" component={ContentDetailScreen} />
-        <Stack.Screen name="ExpertProfile" component={ExpertProfileScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

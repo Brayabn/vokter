@@ -4,7 +4,9 @@ import { alpha, colors, fonts, glow, radius } from '../theme';
 
 /**
  * Botones de la web, con la misma jerarquía:
- *  - primary: rounded-full bg-azure text-mist + resplandor azul (acción principal)
+ *  - primary: pildora azul electrico + resplandor (accion principal). Encima va
+ *             `onAzure` (blanco puro): con `mist` el contraste caeria a 4.08:1,
+ *             por debajo del minimo AA. Con blanco da 4.68:1.
  *  - ghost:   borde white/15 sobre white/5 (acción secundaria)
  *  - light:   bg-mist text-ink (la llamada "Descargar app" del landing)
  *  - outline: borde azure/60 con texto sky ("Reintentar")
@@ -12,11 +14,11 @@ import { alpha, colors, fonts, glow, radius } from '../theme';
  * El hover:scale-105 / active:scale-95 de la web se traduce en un hundimiento al tocar.
  */
 const VARIANTS = {
-  primary: { bg: colors.azure, pressedBg: colors.azureDeep, border: colors.azure, text: colors.mist, glow: true },
+  primary: { bg: colors.azure, pressedBg: colors.azureDeep, border: colors.azure, text: colors.onAzure, glow: true },
   ghost: { bg: alpha.white5, pressedBg: alpha.white10, border: alpha.white15, text: colors.mist },
   light: { bg: colors.mist, pressedBg: '#FFFFFF', border: colors.mist, text: colors.ink },
   outline: { bg: 'transparent', pressedBg: alpha.azure10, border: alpha.azure60, text: colors.sky },
-  glass: { bg: 'rgba(242,248,255,0.06)', pressedBg: 'rgba(242,248,255,0.12)', border: 'rgba(242,248,255,0.12)', text: colors.mist },
+  glass: { bg: 'rgba(232,240,252,0.06)', pressedBg: 'rgba(232,240,252,0.12)', border: 'rgba(232,240,252,0.12)', text: colors.mist },
 };
 
 const SIZES = {

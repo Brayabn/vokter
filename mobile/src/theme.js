@@ -7,17 +7,29 @@
 //   - `sky` es claro: encima va texto `ink` (negro), nunca blanco.
 //   - `sky` es además el color del texto de acento sobre fondo oscuro.
 export const colors = {
-  ink: '#04070D',       // fondo de la app (casi negro)
-  surface: '#090F19',   // tarjetas
-  surface2: '#111C2D',  // inputs y superficies elevadas
-  azure: '#1E6BFF',     // acento principal (azul)
+  // Identidad de VOKTER: negro azulado, azul electrico y celeste. Es la misma
+  // linea grafica que la web, para que app y sitio se lean como una sola
+  // plataforma.
+  //
+  // REGLAS DE CONTRASTE (verificadas con WCAG, no estimadas):
+  //   - `azure` como FONDO lleva texto `onAzure` (blanco puro): 4.68:1.
+  //     Con `mist` encima solo daria 4.08:1, por debajo del minimo AA.
+  //   - `azure` NO se usa como texto pequeno sobre fondo oscuro (4.28:1).
+  //     Para texto de acento va `sky`, que da 12.46:1.
+  ink: '#05080F',       // fondo principal de la app
+  surface: '#0B1422',   // tarjetas
+  surface2: '#121E30',  // inputs y superficies elevadas
+  azure: '#2168FF',     // azul electrico: botones, pestana activa, seleccion
   azureSoft: '#4F8DFF',
-  azureDeep: '#0B4CD6', // pulsado de los botones azules
-  sky: '#6FD3FF',       // acento secundario y texto de acento (azul claro)
+  azureDeep: '#1450D6', // pulsado de los botones azules
+  sky: '#70D9FF',       // celeste: texto de acento, cuotas, etiquetas
   skySoft: '#A9E7FF',
-  steel: '#8CA3C2',     // texto secundario
-  mist: '#F2F8FF',      // texto principal (blanco)
+  steel: '#91A4BF',     // texto secundario (gris azulado)
+  mist: '#E8F0FC',      // texto principal
+  onAzure: '#FFFFFF',   // unico color admitido encima de `azure`
+  border: '#263A52',    // bordes discretos de tarjetas y separadores
   danger: '#FF6B81',    // reservado a errores: nunca decorativo
+  live: '#4ADE80',      // indicador de "en vivo" (10.6:1 sobre tarjeta)
 };
 
 // Equivalentes de las opacidades de Tailwind que usa la web (border-white/10, bg-sky/15...).
@@ -29,20 +41,25 @@ export const alpha = {
   white25: 'rgba(255,255,255,0.25)',
   ink80: 'rgba(4,7,13,0.80)',
   ink85: 'rgba(4,7,13,0.85)',
-  azure10: 'rgba(30,107,255,0.10)',
-  azure15: 'rgba(30,107,255,0.15)',
-  azure25: 'rgba(30,107,255,0.25)',
-  azure60: 'rgba(30,107,255,0.60)',
-  sky10: 'rgba(111,211,255,0.10)',
-  sky15: 'rgba(111,211,255,0.15)',
-  sky30: 'rgba(111,211,255,0.30)',
-  sky40: 'rgba(111,211,255,0.40)',
+  azure10: 'rgba(33,104,255,0.10)',
+  azure15: 'rgba(33,104,255,0.15)',
+  azure25: 'rgba(33,104,255,0.25)',
+  azure60: 'rgba(33,104,255,0.60)',
+  sky10: 'rgba(112,217,255,0.10)',
+  sky15: 'rgba(112,217,255,0.15)',
+  sky30: 'rgba(112,217,255,0.30)',
+  sky40: 'rgba(112,217,255,0.40)',
+  border60: 'rgba(38,58,82,0.60)',
+  live15: 'rgba(74,222,128,0.15)',
+  live40: 'rgba(74,222,128,0.40)',
   danger10: 'rgba(255,107,129,0.10)',
   danger30: 'rgba(255,107,129,0.30)',
 };
 
 // Bordes de un píxel: casi invisibles pero suficientes para separar superficies.
-export const hairline = alpha.white10;
+// Borde de un pixel entre superficies. Antes era blanco al 10%; ahora hay un
+// color de borde propio en la paleta.
+export const hairline = colors.border;
 
 // Tipografías de la web: Sora (titulares), Inter (texto) e IBM Plex Mono (etiquetas,
 // precios, porcentajes). Se cargan en App.js; en React Native el peso va en el nombre
@@ -63,8 +80,8 @@ export const fonts = {
 
 // Degradados de los titulares (.text-gradient-azure / .text-gradient-mist de la web).
 export const gradients = {
-  azure: ['#A9E7FF', '#6FD3FF', '#1E6BFF'],
-  mist: ['#FFFFFF', 'rgba(242,248,255,0.55)'],
+  azure: ['#A9E7FF', '#70D9FF', '#2168FF'],
+  mist: ['#FFFFFF', 'rgba(232,240,252,0.55)'],
   bar: [colors.azure, colors.sky],
 };
 
@@ -72,17 +89,17 @@ export const radius = { sm: 12, md: 16, lg: 20, xl: 24, pill: 999 };
 
 // Superficie de las GlowCard de la web (--backdrop y --backup-border de spotlight-card.jsx).
 export const card = {
-  backgroundColor: 'rgba(6,11,20,0.74)',
-  borderColor: 'rgba(34,53,79,0.9)',
+  backgroundColor: 'rgba(11,20,34,0.74)',
+  borderColor: 'rgba(38,58,82,0.9)',
   borderWidth: 1.5,
   borderRadius: radius.lg,
 };
 
 // Sombras con la misma sintaxis que la web (boxShadow existe en la nueva arquitectura de
-// React Native, en Android y en iOS): shadow-[0_0_30px_-10px_rgba(30,107,255,0.8)], etc.
-export const glow = { boxShadow: '0px 0px 30px -10px rgba(30,107,255,0.8)' };
-export const glowStrong = { boxShadow: '0px 0px 40px -8px rgba(30,107,255,0.9)' };
-export const glowSky = { boxShadow: '0px 0px 30px -12px rgba(111,211,255,0.9)' };
+// React Native, en Android y en iOS): shadow-[0_0_30px_-10px_rgba(33,104,255,0.8)], etc.
+export const glow = { boxShadow: '0px 0px 30px -10px rgba(33,104,255,0.8)' };
+export const glowStrong = { boxShadow: '0px 0px 40px -8px rgba(33,104,255,0.9)' };
+export const glowSky = { boxShadow: '0px 0px 30px -12px rgba(112,217,255,0.9)' };
 export const cardShadow = { boxShadow: '0px 16px 32px -16px rgba(0,0,0,1)' };
 
 // Etiqueta "CATÁLOGO", "TU PANEL"...: font-mono text-xs uppercase tracking-[0.3em] text-sky

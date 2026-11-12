@@ -45,7 +45,7 @@ export default function LoginScreen({ navigation, embedded = false }) {
       if (embedded) return;
       const { routes, index } = navigation.getState();
       if (RETURN_TO.includes(routes[index - 1]?.name)) navigation.goBack();
-      else goTo(navigation, 'Panel');
+      else goTo(navigation, 'Inicio');
     } catch (err) {
       setError(getErrorMessage(err, 'No pudimos iniciar tu sesión.'));
       setLoading(false);

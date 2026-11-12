@@ -1,10 +1,16 @@
-// Navegación entre las páginas principales (las del menú). Igual que en la web, cada página
-// principal cuelga directamente del inicio: "atrás" desde Catálogo, Panel o Favoritos
-// vuelve al inicio, en lugar de acumular un historial infinito al usar el menú.
+// Navegación entre las secciones principales.
+//
+// Desde que la app usa barra inferior, las cinco secciones viven dentro del
+// navegador de pestañas ("Tabs") y el resto son pantallas apiladas encima. Esta
+// función oculta esa diferencia: las pantallas llaman goTo(navigation, 'Ligas')
+// sin saber si es una pestaña o no.
+const PESTANAS = ['Inicio', 'Partidos', 'Ligas', 'Mercados', 'Perfil'];
+
 export function goTo(navigation, name, params) {
-  if (name === 'Inicio') {
-    navigation.reset({ index: 0, routes: [{ name: 'Inicio' }] });
+  if (PESTANAS.includes(name)) {
+    // navigate (y no reset) para conservar el estado de las demás pestañas.
+    navigation.navigate('Tabs', { screen: name, params });
     return;
   }
-  navigation.reset({ index: 1, routes: [{ name: 'Inicio' }, { name, params }] });
+  navigation.navigate(name, params);
 }

@@ -38,7 +38,7 @@ export default function RegisterScreen({ navigation }) {
     setLoading(true);
     try {
       await register({ ...form, name: form.name.trim(), email: form.email.trim() });
-      goTo(navigation, 'Panel'); // la sesión ya quedó iniciada
+      goTo(navigation, 'Inicio'); // la sesión ya quedó iniciada
     } catch (err) {
       setError(getErrorMessage(err, 'No pudimos crear tu cuenta.'));
       setLoading(false);
