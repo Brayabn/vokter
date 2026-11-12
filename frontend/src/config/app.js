@@ -10,12 +10,15 @@
  * el panel de Vercel se quedó atrás respecto a la versión publicada y la página
  * llegó a ofrecer un APK que no correspondía.
  *
- * `VITE_APK_URL` sigue admitiéndose como sustitución puntual para entornos de
- * prueba; en producción no hace falta definirla.
+ * Esta constante MANDA sobre `VITE_APK_URL`. El orden inverso no sirve: la
+ * variable que quedo configurada en Vercel sigue apuntando a una release
+ * antigua, asi que si tuviera prioridad seguiria entregando ese APK por mucho
+ * que aqui se publique otro. La variable solo se usa si esta constante queda
+ * vacia, como valvula de escape para un entorno de pruebas.
  */
 const APK_RELEASE_URL = 'https://github.com/Brayabn/vokter/releases/download/v1.2.0/VOKTER-v1.2.0.apk';
 
-const rawApkUrl = (import.meta.env.VITE_APK_URL || '').trim() || APK_RELEASE_URL;
+const rawApkUrl = APK_RELEASE_URL.trim() || (import.meta.env.VITE_APK_URL || '').trim();
 
 // Solo se acepta una URL HTTPS: un QR hacia localhost o una IP privada no le sirve a nadie.
 export const APK_URL = /^https:\/\//i.test(rawApkUrl) ? rawApkUrl : null;
