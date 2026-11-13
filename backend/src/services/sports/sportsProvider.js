@@ -1,5 +1,6 @@
 const espn = require('./espnProvider');
 const openliga = require('./openLigaProvider');
+const sportsdb = require('./sportsDbProvider');
 
 /**
  * Registro de proveedores deportivos.
@@ -15,7 +16,7 @@ const openliga = require('./openLigaProvider');
  * Para añadir una fuente nueva basta con crear su módulo y meterlo en esta
  * lista: ni las rutas ni las pantallas cambian.
  */
-const PROVEEDORES = [espn, openliga];
+const PROVEEDORES = [espn, sportsdb, openliga];
 
 const porId = (id) => PROVEEDORES.find((p) => p.id === id) || null;
 
