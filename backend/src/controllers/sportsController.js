@@ -1,6 +1,7 @@
 const { League, Team, Match, Market, Odd } = require('../models');
 const { MARKET_TYPES, DEMO_NOTICE } = require('../utils/sportsData');
 const { parseId } = require('../utils/params');
+const { probarTodo, competicionesDeclaradas } = require('../services/sports/sportsProvider');
 
 // Toda respuesta deportiva lleva el aviso: los datos son de demostración y no
 // deben presentarse como información verificada en ninguna pantalla.
@@ -119,5 +120,26 @@ exports.listMarkets = async (req, res) => {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Error al listar los mercados.' });
+  }
+};
+
+// GET /api/sports/diag
+// Diagnostico de las fuentes publicas: a cuales llega el servidor y que
+// competiciones responden de verdad. Es de solo lectura y no acepta ninguna URL
+// del cliente: recorre unicamente los proveedores configurados, asi que no
+// puede usarse para que el backend consulte un sitio arbitrario.
+exports.diag = async (req, res) => {
+  try {
+    const inicio = Date.now();
+    const fuentes = await probarTodo();
+    return res.json({
+      comprobadoEn: new Date().toISOString(),
+      msTotal: Date.now() - inicio,
+      declaradas: competicionesDeclaradas().length,
+      fuentes,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Error al diagnosticar las fuentes deportivas.' });
   }
 };

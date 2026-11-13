@@ -8,5 +8,6 @@ router.get('/leagues', sportsController.listLeagues);
 router.get('/matches', sportsController.listMatches);
 router.get('/matches/:id', sportsController.getMatch);
 router.get('/markets', sportsController.listMarkets);
+router.get('/diag', sportsController.diag);
 
 module.exports = router;
