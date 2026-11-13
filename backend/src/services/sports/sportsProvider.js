@@ -1,6 +1,7 @@
 const espn = require('./espnProvider');
 const openliga = require('./openLigaProvider');
 const sportsdb = require('./sportsDbProvider');
+const openfootball = require('./openFootballProvider');
 
 /**
  * Registro de proveedores deportivos.
@@ -16,7 +17,20 @@ const sportsdb = require('./sportsDbProvider');
  * Para añadir una fuente nueva basta con crear su módulo y meterlo en esta
  * lista: ni las rutas ni las pantallas cambian.
  */
-const PROVEEDORES = [espn, sportsdb, openliga];
+/**
+ * Proveedores ACTIVOS: los que de verdad responden desde el servidor.
+ *
+ * ESPN y TheSportsDB quedan fuera del ciclo aunque funcionen desde un
+ * navegador: comprobado contra produccion, los dos devuelven 403 a las IPs de
+ * centro de datos donde corre Render. Dejarlos activos solo serviria para
+ * lanzar peticiones condenadas a fallar cada minuto. Sus adaptadores se
+ * conservan porque el bloqueo es por IP y podria levantarse, o servir si el
+ * backend se mueve a otra infraestructura.
+ */
+const PROVEEDORES = [openliga, openfootball];
+
+// Se siguen sondeando en /diag para dejar constancia de su estado real.
+const NO_ALCANZABLES = [espn, sportsdb];
 
 const porId = (id) => PROVEEDORES.find((p) => p.id === id) || null;
 
@@ -33,7 +47,7 @@ function competicionesDeclaradas() {
  */
 async function probarTodo() {
   const informe = [];
-  for (const p of PROVEEDORES) {
+  for (const p of [...PROVEEDORES, ...NO_ALCANZABLES]) {
     const inicio = Date.now();
     try {
       const cobertura = await p.probarCobertura();
@@ -59,4 +73,4 @@ async function probarTodo() {
   return informe;
 }
 
-module.exports = { PROVEEDORES, porId, competicionesDeclaradas, probarTodo };
+module.exports = { PROVEEDORES, NO_ALCANZABLES, porId, competicionesDeclaradas, probarTodo };

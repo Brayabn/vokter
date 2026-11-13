@@ -8,6 +8,7 @@ const rateLimit = require('express-rate-limit');
 const { sequelize } = require('./models');
 const { seedDemoData } = require('./utils/seed');
 const { seedSportsData } = require('./utils/seedSports');
+const { iniciarSincronizacion } = require('./services/sports/sportsSyncService');
 const { ensureSchema } = require('./utils/schema');
 const authRoutes = require('./routes/authRoutes');
 const contentRoutes = require('./routes/contentRoutes');
@@ -110,10 +111,19 @@ async function start() {
     if (config.seedDemoData) {
       const created = await seedDemoData();
       console.log('🌱 Datos demo verificados. Nuevos registros:', created);
-      // Módulo deportivo: tablas propias, no toca catálogo ni usuarios.
-      const deporte = await seedSportsData();
-      console.log('⚽ Datos deportivos (DEMOSTRACIÓN) verificados:', deporte);
+      // Los encuentros de demostración solo se siembran si se pide
+      // explícitamente. En producción no se siembran: las pantallas muestran
+      // datos deportivos reales y mezclarlos sería presentar ficción como real.
+      if (process.env.SEED_SPORTS_DEMO === 'true') {
+        const deporte = await seedSportsData();
+        console.log('⚽ Datos deportivos de DEMOSTRACIÓN sembrados:', deporte);
+      }
     }
+
+    // Sincronización de datos deportivos reales. Va dentro del arranque del
+    // servidor, no a petición de un usuario: así las peticiones a los
+    // proveedores no se multiplican por número de visitantes.
+    iniciarSincronizacion();
 
     const server = app.listen(config.port, () => {
       console.log(`🚀 VOKTER backend (${config.nodeEnv}) escuchando en el puerto ${config.port}`);
